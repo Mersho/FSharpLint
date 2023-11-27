@@ -76,3 +76,18 @@ let someAsyncFunction = async {
     }""")
 
         this.AssertNoWarnings()
+
+    [<Test>]
+    member this.AsyncExceptionWithoutReturnInnerExpression() = 
+        this.Parse("""
+namespace Program
+
+let someAsyncFunction =
+    async {
+        if 2 = 2 then
+            raise (new System.Exception("An error occurred."))
+
+        return true
+    }""")
+
+        Assert.IsTrue this.ErrorsExist
