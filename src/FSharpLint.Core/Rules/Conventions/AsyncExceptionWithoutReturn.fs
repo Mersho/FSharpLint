@@ -13,7 +13,7 @@ let isIdentifierExecptionRaise (identifer: Ident) =
     || identifer.idText = "raise"
     
 
-let checkSequentialExpression (expression: SynExpr) (range: range) =
+let checkForExceptionWithoutReturn (expression: SynExpr) (range: range) =
     match expression with
     | SynExpr.App (_, _, SynExpr.Ident failwithId, _, _) when
         isIdentifierExecptionRaise failwithId
@@ -23,18 +23,34 @@ let checkSequentialExpression (expression: SynExpr) (range: range) =
           SuggestedFix = None
           TypeChecks = List.Empty }
         |> Array.singleton
-    // WIP
-    //| SynExpr.YieldOrReturn (_, SynExpr.App (_, _, SynExpr.Ident identifier, _, _), range) when 
-    //    isIdentifierExecptionRaise identifier -> 
-
     | _ -> Array.empty
 
+let rec checkForReturns (expression: SynExpr) (range: range) =
+    match expression with
+    | SynExpr.Sequential (_, _, firstExpression, secondExpression, _) ->
+        checkForReturns firstExpression range
+        |> Array.append (checkForReturns secondExpression range)
+    | SynExpr.YieldOrReturn (_, _, _) ->
+        { Range = range
+          Message = Resources.GetString "RulesAsyncExceptionWithoutReturn"
+          SuggestedFix = None
+          TypeChecks = List.Empty }
+        |> Array.singleton
+    | _ -> Array.empty
+
+let checkForReturnsAfterExceptionWithReturn (firstExpression: SynExpr) (secondExpression: SynExpr) (range: range) =
+    match firstExpression with
+    | SynExpr.YieldOrReturn (_, SynExpr.App (_, _, SynExpr.Ident identifier, _, _), _) when 
+        isIdentifierExecptionRaise identifier -> 
+        checkForReturns secondExpression range
+    | _ -> Array.empty
 
 let rec checkExpression (expression: SynExpr) (range: range) =
     match expression with
     | SynExpr.Sequential (_, _, firstExpression, secondExpression, _) ->
-        let result = checkSequentialExpression firstExpression range
-        Array.append result (checkExpression secondExpression secondExpression.Range)
+        checkForExceptionWithoutReturn firstExpression range
+        |> Array.append (checkForReturnsAfterExceptionWithReturn firstExpression secondExpression range)
+        |> Array.append (checkExpression secondExpression secondExpression.Range)
     | SynExpr.Paren (innerExpression, _, _, range) -> checkExpression innerExpression range
     | SynExpr.While (_, _, innerExpression, range) -> checkExpression innerExpression range
     | SynExpr.For (_, _, _, _, _, innerExpression, range) -> checkExpression innerExpression range
