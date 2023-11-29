@@ -89,3 +89,14 @@ with
     raise ex """
 
         this.AssertNoWarnings()
+
+
+    [<Test>]
+    member this.``reraise outside of try-block``() =
+        this.Parse
+            """
+let ex : Exception = gotMyExceptionFromSomewhere()
+raise ex
+"""
+
+        this.AssertNoWarnings()
