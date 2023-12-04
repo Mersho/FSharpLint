@@ -1,13 +1,13 @@
 source https://api.nuget.org/v3/index.json
 
-framework: netstandard2.0, net5.0
+framework: netstandard2.0, net6.0
 storage: none
 
 nuget Argu
 nuget BenchmarkDotNet
 nuget BenchmarkDotNet.Diagnostics.Windows
 nuget FParsec
-nuget FSharp.Compiler.Service ~> 40.0
+nuget FSharp.Compiler.Service ~> 41.0.1
 nuget Ionide.ProjInfo.ProjectSystem ~> 0.55.4
 nuget Ionide.ProjInfo.FCS ~> 0.55.4
 nuget FSharp.Core
@@ -39,8 +39,9 @@ group Docs
 group Build
   source https://api.nuget.org/v3/index.json
 
-  framework: netstandard2.0
+  framework: net6.0
   storage: none
+  strategy: min
 
   nuget Fake.Core.Target
   nuget Fake.Core.Process
