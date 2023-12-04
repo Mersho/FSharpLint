@@ -11,15 +11,17 @@ let private runner (args: AstNodeRuleParams) =
     match args.AstNode with
     | MemberDefinition(
         SynMemberDefn.Member(
-            SynBinding(accessibility, kind, _, false, _attributes, _xmlDoc, valData, headPat, returnInfo, expr, bindingRange, _), memberRange)) ->
-        match expr with
-        | SynExpr.Const(constant, range) ->
+            SynBinding(accessibility, kind, _, false, _attributes, _xmlDoc, valData, SynPat.LongIdent(_, _, _, argPats, _, _), returnInfo, expr, bindingRange, _), memberRange)) ->
+        match (expr, argPats) with
+        | (_, SynArgPats.Pats pats) when pats.Length > 0 -> 
+            Array.empty
+        | (SynExpr.Const(constant, range), _) ->
             { Range = range
               Message = Resources.GetString "RulesSuggestUseAutoProperty"
               SuggestedFix = None
               TypeChecks = List.Empty }
             |> Array.singleton
-        | SynExpr.Ident(ident) ->
+        | (SynExpr.Ident(ident), _) ->
             { Range = ident.idRange
               Message = Resources.GetString "RulesSuggestUseAutoProperty"
               SuggestedFix = None
