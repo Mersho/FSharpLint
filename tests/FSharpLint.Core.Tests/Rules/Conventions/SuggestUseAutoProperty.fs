@@ -25,3 +25,12 @@ type Foo() =
 """
 
         Assert.IsTrue(this.ErrorsExist)
+
+    [<Test>]
+    member this.``Shouldn't suggest usage of auto-property for non-property member``() =
+        this.Parse """
+type Foo(content: int) =
+    member x.Content() = content
+"""
+
+        Assert.IsTrue(this.NoErrorsExist)
