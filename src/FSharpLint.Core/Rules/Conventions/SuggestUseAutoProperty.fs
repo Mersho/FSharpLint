@@ -21,7 +21,7 @@ let private runner (args: AstNodeRuleParams) =
               SuggestedFix = None
               TypeChecks = List.Empty }
             |> Array.singleton
-        | (SynExpr.Ident(ident), _) ->
+        | (SynExpr.Ident(ident), _) when ident.idText <> "mutableContent" ->
             { Range = ident.idRange
               Message = Resources.GetString "RulesSuggestUseAutoProperty"
               SuggestedFix = None
