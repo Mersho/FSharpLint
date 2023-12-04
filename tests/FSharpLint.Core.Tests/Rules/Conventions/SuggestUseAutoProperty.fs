@@ -34,3 +34,13 @@ type Foo(content: int) =
 """
 
         Assert.IsTrue(this.NoErrorsExist)
+
+    [<Test>]
+    member this.``Shouldn't suggest usage of auto-property for property that returns mutable value``() =
+        this.Parse """
+type Foo(content: int) =
+    let mutable mutableContent = content
+    member x.Content = mutableContent
+"""
+
+        Assert.IsTrue(this.NoErrorsExist)
