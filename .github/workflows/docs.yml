@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        dotnet: [7.0.404]
+        dotnet: [8.0.100]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -23,7 +23,7 @@ jobs:
     - name: Setup .NET 7
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 7.0.404
+        dotnet-version: 8.0.100
     - name: Restore tools
       run: dotnet tool restore
     - name: Restore dependencies
