@@ -8,8 +8,8 @@ nuget BenchmarkDotNet
 nuget BenchmarkDotNet.Diagnostics.Windows
 nuget FParsec
 nuget FSharp.Compiler.Service ~> 40.0
-nuget Ionide.ProjInfo.ProjectSystem ~> 0.53.0
-nuget Ionide.ProjInfo.FCS ~> 0.53.0
+nuget Ionide.ProjInfo.ProjectSystem ~> 0.55.4
+nuget Ionide.ProjInfo.FCS ~> 0.55.4
 nuget FSharp.Core
 nuget nunit
 nuget NUnit3TestAdapter
