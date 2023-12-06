@@ -8,10 +8,11 @@ nuget BenchmarkDotNet
 nuget BenchmarkDotNet.Diagnostics.Windows
 nuget FParsec
 nuget FSharp.Compiler.Service ~> 40.0
-nuget Ionide.ProjInfo.ProjectSystem ~> 0.55.4
-nuget Ionide.ProjInfo.FCS ~> 0.55.4
+nuget Ionide.ProjInfo == 0.53.0
+nuget Ionide.ProjInfo.ProjectSystem == 0.53.0
+nuget Ionide.ProjInfo.FCS == 0.53.0
 nuget FSharp.Core
-nuget nunit
+nuget nunit == 3.13.3
 nuget NUnit3TestAdapter
 nuget Microsoft.NET.Test.Sdk
 nuget Newtonsoft.Json
@@ -20,10 +21,10 @@ nuget Microsoft.Build.Locator
 # don't expose as a package reference
 nuget Microsoft.SourceLink.GitHub copy_local: true
 # don't copy runtime assets
-nuget Microsoft.Build.Framework copy_local: false
+nuget Microsoft.Build.Framework == 17.3.2 copy_local: false
 nuget Microsoft.Build.Tasks.Core copy_local: false
-nuget Microsoft.Build.Utilities.Core copy_local: false
-nuget Microsoft.Build copy_local: false
+nuget Microsoft.Build.Utilities.Core == 17.3.2 copy_local: false
+nuget Microsoft.Build == 17.3.2 copy_local: false
 
 group Docs
   source https://api.nuget.org/v3/index.json
