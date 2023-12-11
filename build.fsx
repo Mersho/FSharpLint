@@ -13,6 +13,8 @@ open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 open Fake.Api
 
+open System.IO
+
 Target.initEnvironment()
 
 // --------------------------------------------------------------------------------------
@@ -141,7 +143,18 @@ Target.create "Push" (fun _ ->
 Target.create "Check" (fun p ->
     let consoleDir = Path.combine "src" "FSharpLint.Console"
     let userDirectory = p.Context.Arguments.[0]
-    // TODO: check directory is valid
+
+    printfn "Run FsharpLint with default config"
+    exec "dotnet" (sprintf "run --framework net5.0 lint %s" userDirectory) consoleDir
+
+    let coreDir = Path.combine "src" "FSharpLint.Core"
+    let fsharplintJsonDir = Path.combine coreDir "fsharplint.json"
+    let fsharplintJsonText = File.ReadAllText fsharplintJsonDir
+    let enableAllRules = fsharplintJsonText.Replace ("\"enabled\": false", "\"enabled\": true")
+
+    File.WriteAllText (fsharplintJsonDir, enableAllRules)
+
+    printfn "Re-run FsharpLint and activate all rules"
     exec "dotnet" (sprintf "run --framework net5.0 lint %s" userDirectory) consoleDir
 )
 
