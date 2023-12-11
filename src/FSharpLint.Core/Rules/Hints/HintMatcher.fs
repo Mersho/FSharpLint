@@ -199,8 +199,10 @@ module private MatchExpression =
             PossiblyInConstructor
         | AstNode.Expression(PossiblyMethodCallOrConstructor)::_
         | AstNode.Expression(SynExpr.Tuple(_))::AstNode.Expression(PossiblyMethodCallOrConstructor)::_
-        | AstNode.Expression(SynExpr.Tuple(_))::AstNode.TypeParameter(_)::AstNode.Expression(PossiblyMethodCallOrConstructor)::_ ->
-            PossiblyInMethod
+        | AstNode.Expression (SynExpr.Tuple (_)) :: AstNode.TypeParameter (_) :: AstNode.Expression
+            (
+                PossiblyMethodCallOrConstructor
+            ) :: _ -> PossiblyInMethod
         | _ -> NotInMethod
 
     [<NoComparison; NoEquality>]
@@ -319,10 +321,12 @@ module private MatchExpression =
 
     and matchLambda arguments =
         match (arguments.Expression, arguments.Hint) with
-        | Lambda({ Arguments = args; Body = body }, _), Expression.Lambda(lambdaArgs, LambdaBody(Expression.LambdaBody(lambdaBody))) ->
+        | Lambda ({ Arguments = args; Body = body }, _),
+          Expression.Lambda (lambdaArgs, LambdaBody (Expression.LambdaBody (lambdaBody))) ->
             match matchLambdaArguments lambdaArgs args with
-            | LambdaMatch.Match(lambdaArguments) ->
-                matchHintExpr { arguments.SubHint(AstNode.Expression(body), lambdaBody) with LambdaArguments = lambdaArguments }
+            | LambdaMatch.Match (lambdaArguments) ->
+                matchHintExpr
+                    { arguments.SubHint(AstNode.Expression(body), lambdaBody) with LambdaArguments = lambdaArguments }
             | LambdaMatch.NoMatch -> NoMatch
         | _ -> NoMatch
 
@@ -338,8 +342,10 @@ module private MatchExpression =
         | AstNode.Expression(SynExpr.ArrayOrList(false, expressions, _)), Expression.List(hintExpressions) ->
             let expressions = List.map AstNode.Expression expressions
             doExpressionsMatch expressions hintExpressions arguments
-        | AstNode.Expression(SynExpr.ArrayOrListOfSeqExpr(false, SynExpr.CompExpr(true, _, expression, _), _)), Expression.List([hintExpression]) ->
-            arguments.SubHint(AstNode.Expression(expression), hintExpression) |> matchHintExpr
+        | AstNode.Expression (SynExpr.ArrayOrListOfSeqExpr (false, SynExpr.CompExpr (true, _, expression, _), _)),
+          Expression.List ([ hintExpression ]) ->
+            arguments.SubHint(AstNode.Expression(expression), hintExpression)
+            |> matchHintExpr
         | _ -> NoMatch
 
     and private matchArray arguments =
@@ -347,19 +353,37 @@ module private MatchExpression =
         | AstNode.Expression(SynExpr.ArrayOrList(true, expressions, _)), Expression.Array(hintExpressions) ->
             let expressions = List.map AstNode.Expression expressions
             doExpressionsMatch expressions hintExpressions arguments
-        | AstNode.Expression(SynExpr.ArrayOrListOfSeqExpr(true, SynExpr.CompExpr(true, _, expression, _), _)), Expression.Array([hintExpression]) ->
-            arguments.SubHint(AstNode.Expression(expression), hintExpression) |> matchHintExpr
+        | AstNode.Expression (SynExpr.ArrayOrListOfSeqExpr (true, SynExpr.CompExpr (true, _, expression, _), _)),
+          Expression.Array ([ hintExpression ]) ->
+            arguments.SubHint(AstNode.Expression(expression), hintExpression)
+            |> matchHintExpr
         | _ -> NoMatch
 
     and private matchInfixOperation arguments =
         match (arguments.Expression, arguments.Hint) with
-        | (AstNode.Expression(SynExpr.App(_, true, (SynExpr.Ident(_) as opExpr), SynExpr.Tuple(_, [leftExpr; rightExpr], _, _), _)),
-           Expression.InfixOperator(op, left, right)) ->
-            arguments.SubHint(AstNode.Expression(opExpr), op) |> matchHintExpr &&~
-            (arguments.SubHint(AstNode.Expression(rightExpr), right) |> matchHintExpr) &&~
-            (arguments.SubHint(AstNode.Expression(leftExpr), left) |> matchHintExpr)
-        | (AstNode.Expression(SynExpr.App(_, _, infixExpr, rightExpr, _)),
-           Expression.InfixOperator(op, left, right)) ->
+        |
+            (
+                AstNode.Expression
+                    (
+                        SynExpr.App
+                            (
+                                _,
+                                true,
+                                (SynExpr.Ident (_) as opExpr),
+                                SynExpr.Tuple (_, [ leftExpr; rightExpr ], _, _),
+                                _
+                            )
+                    ),
+                Expression.InfixOperator (op, left, right)
+            ) ->
+            arguments.SubHint(AstNode.Expression(opExpr), op)
+            |> matchHintExpr
+            &&~ (arguments.SubHint(AstNode.Expression(rightExpr), right)
+                 |> matchHintExpr)
+            &&~ (arguments.SubHint(AstNode.Expression(leftExpr), left)
+                 |> matchHintExpr)
+        | (AstNode.Expression (SynExpr.App (_, _, infixExpr, rightExpr, _)), Expression.InfixOperator (
+            op, left, right)) ->
 
             match removeParens <| AstNode.Expression(infixExpr) with
             | AstNode.Expression(SynExpr.App(_, true, opExpr, leftExpr, _)) ->
@@ -380,7 +404,10 @@ module private MatchExpression =
 
     and private matchAddressOf arguments =
         match (arguments.Expression, arguments.Hint) with
-        | AstNode.Expression(SynExpr.AddressOf(synSingleAmp, addrExpr, _, _)), Expression.AddressOf(singleAmp, expr) when synSingleAmp = singleAmp ->
+        | AstNode.Expression 
+            (SynExpr.AddressOf (synSingleAmp, addrExpr, _, _)), Expression.AddressOf (singleAmp, expr) when
+            synSingleAmp = singleAmp
+            ->
             arguments.SubHint(AstNode.Expression(addrExpr), expr) |> matchHintExpr
         | _ -> NoMatch
 
@@ -502,7 +529,14 @@ module private FormatHint =
             Debug.Assert(false, "Expected operator to be an expression identifier, but was " + x.ToString())
             ""
 
-    let rec toString replace parentAstNode (args:AstNodeRuleParams) (matchedVariables:Dictionary<_, SynExpr>) parentHintNode hintNode =
+    let rec toString
+        replace
+        parentAstNode
+        (args: AstNodeRuleParams)
+        (matchedVariables: Dictionary<_, SynExpr>)
+        parentHintNode
+        hintNode
+        =
         let toString = toString replace parentAstNode args matchedVariables (Some hintNode)
 
         let str =
@@ -562,14 +596,22 @@ module private FormatHint =
                 expressions |> surroundExpressionsString (HintPat >> toString) "[|" "|]" ";"
             | HintExpr(Expression.If(cond, expr, None)) ->
                 "if " + toString (HintExpr cond) + " then " + toString (HintExpr expr)
-            | HintExpr(Expression.If(cond, expr, Some(elseExpr))) ->
-                "if " + toString (HintExpr cond) + " then " + toString (HintExpr expr) + " " + toString (HintExpr elseExpr)
+            | HintExpr (Expression.If (cond, expr, Some (elseExpr))) ->
+                "if "
+                + toString (HintExpr cond)
+                + " then "
+                + toString (HintExpr expr)
+                + " "
+                + toString (HintExpr elseExpr)
             | HintExpr(Expression.Else(expr)) ->
                 "else " + toString (HintExpr expr)
             | HintExpr(Expression.Null)
             | HintPat(Pattern.Null) -> "null"
-        if replace && Precedence.requiresParenthesis matchedVariables hintNode parentAstNode parentHintNode then "(" + str + ")"
-        else str
+        if replace
+           && Precedence.requiresParenthesis matchedVariables hintNode parentAstNode parentHintNode then
+            "(" + str + ")"
+        else
+            str
     and private lambdaArgumentsToString replace parentAstNode args matchedVariables (arguments:LambdaArg list) =
         arguments
         |> List.map (fun (LambdaArg expr) -> toString replace parentAstNode args matchedVariables None (HintExpr expr))
@@ -624,13 +666,23 @@ let private canReplaceLambdaWithFunction checkFile methodIdent index =
         not (parameter.Type.HasTypeDefinition && parameter.Type.TypeDefinition.IsDelegate)
     | _ -> true
 
-/// Check if lambda can be replaced with an identifier (cannot in the case when is a parameter with the type of a delegate).
+/// Check if lambda can be replaced with
+/// an identifier (cannot in the case when is a parameter with the type of a delegate).
 let private (|RequiresCheck|CanBeReplaced|CannotBeReplaced|) (breadcrumbs, range) =
     match filterParens breadcrumbs with
-    | AstNode.Expression(SynExpr.Tuple(_, exprs, _, _))::AstNode.Expression(SynExpr.App(ExprAtomicFlag.Atomic, _, SynExpr.DotGet(_, _, methodIdent, _), _, _))::_
-    | AstNode.Expression(SynExpr.Tuple(_, exprs, _, _))::AstNode.Expression(SynExpr.App(ExprAtomicFlag.Atomic, _, SynExpr.LongIdent(_, methodIdent, _, _), _, _))::_ ->
-        match exprs |> List.tryFindIndex (fun x -> x.Range = range) with
-        | Some(index) -> RequiresCheck(index, methodIdent)
+    | AstNode.Expression (SynExpr.Tuple (_, exprs, _, _)) :: AstNode.Expression
+        (
+            SynExpr.App (ExprAtomicFlag.Atomic, _, SynExpr.DotGet (_, _, methodIdent, _), _, _)
+        ) :: _
+    | AstNode.Expression (SynExpr.Tuple (_, exprs, _, _)) :: AstNode.Expression
+        (
+            SynExpr.App (ExprAtomicFlag.Atomic, _, SynExpr.LongIdent (_, methodIdent, _, _), _, _)
+        ) :: _ ->
+        match
+            exprs
+            |> List.tryFindIndex (fun x -> x.Range = range)
+            with
+        | Some (index) -> RequiresCheck(index, methodIdent)
         | None -> CannotBeReplaced
     | AstNode.Expression(SynExpr.App(ExprAtomicFlag.Atomic, _, SynExpr.DotGet(_, _, methodIdent, _), _, _))::_
     | AstNode.Expression(SynExpr.App(ExprAtomicFlag.Atomic, _, SynExpr.LongIdent(_, methodIdent, _, _), _, _))::_ ->
@@ -687,7 +739,8 @@ let private confirmFuzzyMatch (args:AstNodeRuleParams) (hint:HintParser.Hint) =
 /// any matches found are not guaranteed and it's expected that the caller verify the match.
 let private runner (config:Config) (args:AstNodeRuleParams) =
     match config.HintTrie.Lookup.TryGetValue args.NodeHashcode with
-    | true, trie -> Helper.Hints.checkTrie (args.NodeIndex + 1) trie args.SyntaxArray (Dictionary<_, _>()) (confirmFuzzyMatch args)
+    | true, trie ->
+        Helper.Hints.checkTrie (args.NodeIndex + 1) trie args.SyntaxArray (Dictionary<_, _>()) (confirmFuzzyMatch args)
     | false, _ -> ()
 
     let result = suggestions.ToArray()

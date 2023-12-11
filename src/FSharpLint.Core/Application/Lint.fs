@@ -118,7 +118,15 @@ module Lint =
         { IndentationRuleContext:Map<int,bool*int>
           NoTabCharactersRuleContext:(string * Range) list }
 
-    let runAstNodeRules (rules:RuleMetadata<AstNodeRuleConfig> []) (globalConfig:Rules.GlobalRuleConfig) typeCheckResults (filePath:string) (fileContent:string) (lines:string []) syntaxArray =
+    let runAstNodeRules
+        (rules: RuleMetadata<AstNodeRuleConfig> [])
+        (globalConfig: Rules.GlobalRuleConfig)
+        typeCheckResults
+        (filePath: string)
+        (fileContent: string)
+        (lines: string [])
+        syntaxArray
+        =
         let mutable indentationRuleState = Map.empty
         let mutable noTabCharactersRuleState = List.empty
 
@@ -141,7 +149,8 @@ module Lint =
                       GlobalConfig = globalConfig }
                 // Build state for rules with context.
                 indentationRuleState <- Indentation.ContextBuilder.builder indentationRuleState astNode.Actual
-                noTabCharactersRuleState <- NoTabCharacters.ContextBuilder.builder noTabCharactersRuleState astNode.Actual
+                noTabCharactersRuleState <-
+                    NoTabCharacters.ContextBuilder.builder noTabCharactersRuleState astNode.Actual
 
                 rules
                 |> Array.collect (fun rule -> runAstNodeRule rule astNodeParams))
@@ -153,7 +162,14 @@ module Lint =
         rules |> Array.iter (fun rule -> rule.RuleConfig.Cleanup())
         (astNodeSuggestions, context)
 
-    let runLineRules (lineRules:Configuration.LineRules) (globalConfig:Rules.GlobalRuleConfig) (filePath:string) (fileContent:string) (lines:string []) (context:Context) =
+    let runLineRules
+            (lineRules: Configuration.LineRules)
+            (globalConfig: Rules.GlobalRuleConfig)
+            (filePath: string)
+            (fileContent: string)
+            (lines: string [])
+            (context: Context)
+        =
         fileContent
         |> String.toLines
         |> Array.collect (fun (line, lineNumber, isLastLine) ->
@@ -223,8 +239,17 @@ module Lint =
             let syntaxArray = AbstractSyntaxArray.astToArray fileInfo.Ast
 
             // Collect suggestions for AstNode rules
-            let (astNodeSuggestions, context) = runAstNodeRules enabledRules.AstNodeRules enabledRules.GlobalConfig fileInfo.TypeCheckResults fileInfo.File fileInfo.Text lines syntaxArray
-            let lineSuggestions = runLineRules enabledRules.LineRules enabledRules.GlobalConfig fileInfo.File fileInfo.Text lines context
+            let (astNodeSuggestions, context) =
+                runAstNodeRules
+                    enabledRules.AstNodeRules
+                    enabledRules.GlobalConfig
+                    fileInfo.TypeCheckResults
+                    fileInfo.File
+                    fileInfo.Text
+                    lines
+                    syntaxArray
+            let lineSuggestions =
+                runLineRules enabledRules.LineRules enabledRules.GlobalConfig fileInfo.File fileInfo.Text lines context
 
             [| lineSuggestions; astNodeSuggestions |]
             |> Array.concat
@@ -273,10 +298,10 @@ module Lint =
         use p = new System.Diagnostics.Process()
         p.StartInfo <- psi
         let sbOut = System.Text.StringBuilder()
-        p.OutputDataReceived.Add(fun ea -> sbOut.AppendLine(ea.Data) |> ignore)
+        p.OutputDataReceived.Add(fun ea -> sbOut.AppendLine(ea.Data) |> ignore<Text.StringBuilder>)
         let sbErr = System.Text.StringBuilder()
-        p.ErrorDataReceived.Add(fun ea -> sbErr.AppendLine(ea.Data) |> ignore)
-        p.Start() |> ignore
+        p.ErrorDataReceived.Add(fun ea -> sbErr.AppendLine(ea.Data) |> ignore<Text.StringBuilder>)
+        p.Start() |> ignore<bool>
         p.BeginOutputReadLine()
         p.BeginErrorReadLine()
         p.WaitForExit()
@@ -320,12 +345,13 @@ module Lint =
         | Success of Suggestion.LintWarning list
         | Failure of LintFailure
 
-        member self.TryGetSuccess([<Out>] success:byref<Suggestion.LintWarning list>) =
-            match self with
+        member this.TryGetSuccess([<Out>] success:byref<Suggestion.LintWarning list>) =
+            match this with
             | Success value -> success <- value; true
             | _ -> false
-        member self.TryGetFailure([<Out>] failure:byref<LintFailure>) =
-            match self with
+
+        member this.TryGetFailure([<Out>] failure:byref<LintFailure>) =
+            match this with
             | Failure value -> failure <- value; true
             | _ -> false
 
@@ -391,7 +417,11 @@ module Lint =
 
     /// Lints an entire F# project by retrieving the files from a given
     /// path to the `.fsproj` file.
-    let lintProject (optionalParams:OptionalLintParameters) (projectFilePath:string) (toolsPath:Ionide.ProjInfo.Types.ToolsPath) =
+    let lintProject
+        (optionalParams: OptionalLintParameters)
+        (projectFilePath: string)
+        (toolsPath: Ionide.ProjInfo.Types.ToolsPath)
+        =
         if IO.File.Exists projectFilePath then
             let projectFilePath = Path.GetFullPath projectFilePath
             let lintWarnings = LinkedList<Suggestion.LintWarning>()
@@ -401,7 +431,7 @@ module Lint =
                 let projectProgress = Option.defaultValue ignore optionalParams.ReportLinterProgress
 
                 let warningReceived (warning:Suggestion.LintWarning) =
-                    lintWarnings.AddLast warning |> ignore
+                    lintWarnings.AddLast warning |> ignore<LinkedListNode<Suggestion.LintWarning>>
 
                     optionalParams.ReceivedWarning |> Option.iter (fun func -> func warning)
 
@@ -453,7 +483,11 @@ module Lint =
             |> LintResult.Failure
 
     /// Lints an entire F# solution by linting all projects specified in the `.sln` file.
-    let lintSolution (optionalParams:OptionalLintParameters) (solutionFilePath:string) (toolsPath:Ionide.ProjInfo.Types.ToolsPath) =
+    let lintSolution
+        (optionalParams: OptionalLintParameters)
+        (solutionFilePath: string)
+        (toolsPath: Ionide.ProjInfo.Types.ToolsPath)
+        =
         if IO.File.Exists solutionFilePath then
             let solutionFilePath = Path.GetFullPath solutionFilePath
             let solutionFolder = Path.GetDirectoryName solutionFilePath
@@ -486,7 +520,7 @@ module Lint =
                         | LintResult.Success warnings ->
                             (List.append warnings successes, failures)
                         | LintResult.Failure err ->
-                            (successes, err :: failures)) ([], [])
+                            (successes, err :: failures)) (List.Empty, List.Empty)
 
                 match failures with
                 | [] ->
@@ -506,7 +540,7 @@ module Lint =
             let lintWarnings = LinkedList<Suggestion.LintWarning>()
 
             let warningReceived (warning:Suggestion.LintWarning) =
-                lintWarnings.AddLast warning |> ignore
+                lintWarnings.AddLast warning |> ignore<LinkedListNode<Suggestion.LintWarning>>
 
                 optionalParams.ReceivedWarning |> Option.iter (fun func -> func warning)
             let lintInformation =
@@ -542,13 +576,17 @@ module Lint =
         | ParseFile.Failed failure -> LintResult.Failure(FailedToParseFile failure)
 
     /// Lints an F# file that has already been parsed using `FSharp.Compiler.Services` in the calling application.
-    let lintParsedFile (optionalParams:OptionalLintParameters) (parsedFileInfo:ParsedFileInformation) (filePath:string) =
+    let lintParsedFile
+        (optionalParams: OptionalLintParameters)
+        (parsedFileInfo: ParsedFileInformation)
+        (filePath: string)
+        =
         match getConfig optionalParams.Configuration with
         | Ok config ->
             let lintWarnings = LinkedList<Suggestion.LintWarning>()
 
             let warningReceived (warning:Suggestion.LintWarning) =
-                lintWarnings.AddLast warning |> ignore
+                lintWarnings.AddLast warning |> ignore<LinkedListNode<Suggestion.LintWarning>>
 
                 optionalParams.ReceivedWarning |> Option.iter (fun func -> func warning)
 

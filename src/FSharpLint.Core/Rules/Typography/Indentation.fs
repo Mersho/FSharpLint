@@ -58,7 +58,10 @@ module ContextBuilder =
 
     let private indentationOverridesForNode (node:AstNode) =
         match node with
-        | TypeDefinition (SynTypeDefn(_, SynTypeDefnRepr.Simple(SynTypeDefnSimpleRepr.Record(_, fields, _), _), _,_,  _)) ->
+        | TypeDefinition
+            (
+                SynTypeDefn (_, SynTypeDefnRepr.Simple (SynTypeDefnSimpleRepr.Record (_, fields, _), _), _, _, _)
+            ) ->
             fields
             |> List.map (fun (SynField (_, _, _, _, _, _, _, range)) -> range)
             |> firstRangePerLine
@@ -85,8 +88,14 @@ module ContextBuilder =
             |> List.map (fun expr -> expr.Range)
             |> firstRangePerLine
             |> createAbsoluteAndOffsetOverridesBasedOnFirst
-        | Expression (SynExpr.App(funcExpr=(SynExpr.App(isInfix=isInfix; argExpr=innerArg; funcExpr=funcExpr)); argExpr=outerArg))
-            when isInfix && outerArg.Range.EndLine <> innerArg.Range.StartLine ->
+        | Expression
+            (
+                SynExpr.App (funcExpr = (SynExpr.App (isInfix = isInfix; argExpr = innerArg; funcExpr = funcExpr))
+                             argExpr = outerArg)
+            ) when
+            isInfix
+            && outerArg.Range.EndLine <> innerArg.Range.StartLine
+            ->
             match funcExpr with
             | SynExpr.Ident ident when ident.idText = "op_ColonEquals" ->
                 // := for reference cell assignment should be handled like normal equals, not like an infix operator.

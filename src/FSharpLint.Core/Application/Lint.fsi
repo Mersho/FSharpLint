@@ -120,18 +120,31 @@ module Lint =
         member TryGetFailure : byref<LintFailure> -> bool
 
     /// Runs all rules which take a node of the AST as input.
-    val runAstNodeRules : RuleMetadata<AstNodeRuleConfig> [] -> Rules.GlobalRuleConfig -> FSharpCheckFileResults option -> string -> string -> string [] -> AbstractSyntaxArray.Node [] -> Suggestion.LintWarning [] * Context
-
+    val runAstNodeRules:
+        RuleMetadata<AstNodeRuleConfig> [] ->
+        Rules.GlobalRuleConfig ->
+        FSharpCheckFileResults option ->
+        string ->
+        string ->
+        string [] ->
+        AbstractSyntaxArray.Node [] ->
+            Suggestion.LintWarning [] * Context
     /// Runs all rules which take a line of text as input.
-    val runLineRules : LineRules -> Rules.GlobalRuleConfig -> string -> string -> string [] -> Context -> Suggestion.LintWarning []
-
+    val runLineRules:
+        LineRules -> Rules.GlobalRuleConfig -> string -> string -> string [] -> Context -> Suggestion.LintWarning []
     /// Lints an entire F# solution by linting all projects specified in the `.sln` file.
-    val lintSolution : optionalParams:OptionalLintParameters -> solutionFilePath:string -> toolsPath:Ionide.ProjInfo.Types.ToolsPath -> LintResult
-
+    val lintSolution:
+        optionalParams: OptionalLintParameters ->
+        solutionFilePath: string ->
+        toolsPath: Ionide.ProjInfo.Types.ToolsPath ->
+            LintResult
     /// Lints an entire F# project by retrieving the files from a given
     /// path to the `.fsproj` file.
-    val lintProject : optionalParams:OptionalLintParameters -> projectFilePath:string -> toolsPath:Ionide.ProjInfo.Types.ToolsPath -> LintResult
-
+    val lintProject:
+        optionalParams: OptionalLintParameters ->
+        projectFilePath: string ->
+        toolsPath: Ionide.ProjInfo.Types.ToolsPath ->
+            LintResult
     /// Lints F# source code.
     val lintSource : optionalParams:OptionalLintParameters -> source:string -> LintResult
 
@@ -144,4 +157,8 @@ module Lint =
 
     /// Lints an F# file that has already been parsed using
     /// `FSharp.Compiler.Services` in the calling application.
-    val lintParsedFile : optionalParams:OptionalLintParameters -> parsedFileInfo:ParsedFileInformation -> filePath:string -> LintResult
+    val lintParsedFile:
+        optionalParams: OptionalLintParameters ->
+        parsedFileInfo: ParsedFileInformation ->
+        filePath: string ->
+            LintResult

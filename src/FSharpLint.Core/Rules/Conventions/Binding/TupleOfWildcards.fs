@@ -44,7 +44,18 @@ let private isTupleMemberArgs breadcrumbs tupleRange =
 
 let private runner (args:AstNodeRuleParams) =
     match args.AstNode with
-    | AstNode.Pattern(SynPat.LongIdent(identifier, _, _, SynArgPats.Pats([SynPat.Paren(SynPat.Tuple(_, _, range) as pattern, _)]), _, _)) ->
+    | AstNode.Pattern
+        (
+            SynPat.LongIdent
+                (
+                    identifier,
+                    _,
+                    _,
+                    SynArgPats.Pats ([ SynPat.Paren (SynPat.Tuple (_, _, range) as pattern, _) ]),
+                    _,
+                    _
+                )
+        ) ->
         let breadcrumbs = args.GetParents 2
         if (not << isTupleMemberArgs breadcrumbs) range then
             let identifier = identifier.Lid |> List.map (fun x -> x.idText)
