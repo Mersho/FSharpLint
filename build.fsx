@@ -137,6 +137,14 @@ Target.create "Push" (fun _ ->
         | _ -> UserInput.getUserPassword "NuGet Key: "
     Paket.push (fun p -> { p with WorkingDir = nugetDir; ApiKey = key; ToolType = ToolType.CreateLocalTool() }))
 
+
+Target.create "Check" (fun p ->
+    let consoleDir = Path.combine "src" "FSharpLint.Console"
+    let userDirectory = p.Context.Arguments.[0]
+    // TODO: check directory is valid
+    exec "dotnet" (sprintf "run --framework net5.0 lint %s" userDirectory) consoleDir
+)
+
 // --------------------------------------------------------------------------------------
 // Build order
 // --------------------------------------------------------------------------------------

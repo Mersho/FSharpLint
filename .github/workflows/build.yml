@@ -30,8 +30,7 @@ jobs:
       run: dotnet restore
     - name: Run build
       run: dotnet fake build -t Test
-    - name: Run FSharpLint on itself
-      run: |
-        cd ./src/FSharpLint.Console
-        dotnet run --framework net5.0 lint ../FSharpLint.Core/FSharpLint.Core.fsproj
-        dotnet run --framework net5.0 lint ./FSharpLint.Console.fsproj
+    - name: Run FSharpLint on core
+      run: dotnet fake build -t Check ../FSharpLint.Core/FSharpLint.Core.fsproj
+    - name: Run FSharpLint on console
+      run: dotnet fake build -t Check ./FSharpLint.Console.fsproj
