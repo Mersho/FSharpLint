@@ -28,7 +28,8 @@ let private validateLambdaCannotBeReplacedWithComposition _ lambda range =
                     | SynExpr.Ident(lastArgument) when numFunctionCalls > 1 ->
                         lastArgument.idText = lambdaArgument.idText
                     | SynExpr.App(_, false, _, _, _) as nextFunction ->
-                        lambdaArgumentIsLastApplicationInFunctionCalls nextFunction lambdaArgument (numFunctionCalls + 1)
+                        lambdaArgumentIsLastApplicationInFunctionCalls 
+                            nextFunction lambdaArgument (numFunctionCalls + 1)
                     | _ -> false
                 | _ -> false
             | _ -> false

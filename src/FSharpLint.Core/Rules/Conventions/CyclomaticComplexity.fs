@@ -43,11 +43,15 @@ type private BindingStack(maxComplexity: int) =
     
     member this.Push (args:AstNodeRuleParams) (bs: BindingScope) =
         // if the node is a child of the current binding scope
-        let isChildOfCurrent = if List.isEmpty tier1 then
-                                    false
-                                else
-                                    args.GetParents args.NodeIndex |> List.tryFind (fun x -> Object.ReferenceEquals(tier1.Head.Node, x)) |> Option.isSome
-        // if the node is not a child and the stack isn't empty, we're finished with the current head of tier1, so move it from tier1 to tier2
+        let isChildOfCurrent =
+            if List.isEmpty tier1 then
+                false
+            else
+                args.GetParents args.NodeIndex
+                |> List.tryFind (fun x -> Object.ReferenceEquals(tier1.Head.Node, x))
+                |> Option.isSome
+        // if the node is not a child and the stack isn't empty, we're finished with the current head of tier1,
+        // so move it from tier1 to tier2
         if not isChildOfCurrent && not (List.isEmpty tier1) then
             let popped = tier1.Head
             tier1 <- tier1.Tail
@@ -67,13 +71,16 @@ type private BindingStack(maxComplexity: int) =
                 tier1
                 |> List.filter (fun scope -> scope.Complexity > maxComplexity)
                 |> List.sortByDescending (fun scope -> scope.Complexity) // sort in descending order by complexity
-                |> List.distinctBy (fun scope -> scope.Binding.RangeOfBindingWithRhs.Start) // throw away any extraneous elements with the same start position but a lower complexity
+                // throw away any extraneous elements with the same start position but a lower complexity
+                |> List.distinctBy (fun scope -> scope.Binding.RangeOfBindingWithRhs.Start)
             let enum1 = cleanedUp :> IEnumerable<BindingScope>
             let enum2 = tier2 :> IEnumerable<BindingScope>
             Enumerable.Concat(enum1, enum2).GetEnumerator()
-            
-        member this.GetEnumerator(): Collections.IEnumerator = (this :> IEnumerable<BindingScope> :> System.Collections.IEnumerable).GetEnumerator()
-        
+
+        member this.GetEnumerator() : Collections.IEnumerator =
+            (this :> IEnumerable<BindingScope> :> System.Collections.IEnumerable)
+                .GetEnumerator()
+
     /// Clears the stack.
     member this.Clear() =
         tier1 <- []
@@ -107,7 +114,8 @@ let private countCasesInMatchClause (clause: SynMatchClause) =
 let private boolFunctions = Set.ofList ["op_BooleanOr"; "op_BooleanAnd"]
 
 /// Returns the number of boolean operators in an expression.
-/// If expression is Match, MatchLambda, or MatchBang, the 'when' expressions of the match clauses are examined for boolean operators, if applicable.
+/// If expression is Match, MatchLambda, or MatchBang, the 'when' expressions of the match clauses are examined
+/// for boolean operators, if applicable.
 let private countBooleanOperators expression =
     let rec countOperators count = function
     | SynExpr.App(_, _, expr, SynExpr.Ident(ident), _)
@@ -150,7 +158,8 @@ let runner (config:Config) (args:AstNodeRuleParams) : WarningDetails[] =
     let mutable warningDetails = None
     let node = args.AstNode
     let parentIndex = args.SyntaxArray.[args.NodeIndex].ParentIndex
-    // determine if the node is a duplicate of a node in the AST containing ExtraSyntaxInfo (e.g. lambda arg being a duplicate of the lambda itself)
+    // determine if the node is a duplicate of a node in the AST containing ExtraSyntaxInfo
+    // (e.g. lambda arg being a duplicate of the lambda itself)
     let isMetaData = if parentIndex = args.NodeIndex then
                          false
                      else
@@ -170,36 +179,51 @@ let runner (config:Config) (args:AstNodeRuleParams) : WarningDetails[] =
         match node with
         | AstNode.Expression expression ->
             match expression with
-            | SynExpr.For _ ->
-                bindingStack.IncrComplexityOfCurrentScope 1
-            | SynExpr.ForEach _ ->
-                bindingStack.IncrComplexityOfCurrentScope 1
-            | SynExpr.While(_, condition, _, _) ->
-                bindingStack.IncrComplexityOfCurrentScope (1 + countBooleanOperators condition) // include the number of boolean operators in the while condition
-            | SynExpr.IfThenElse(condition, _, _, _, _, _, _) ->
-                 bindingStack.IncrComplexityOfCurrentScope (1 + countBooleanOperators condition) // include the number of boolean operators in the condition
-            | SynExpr.MatchBang(_, _, clauses, _)
-            | SynExpr.MatchLambda(_, _, clauses, _, _)
-            | SynExpr.Match(_, _, clauses, _) ->
-                let numCases = clauses |> List.sumBy countCasesInMatchClause // determine the number of cases in the match expression 
-                bindingStack.IncrComplexityOfCurrentScope (numCases + countBooleanOperators expression) // include the number of boolean operators in any when expressions, if applicable
+            | SynExpr.For _ -> bindingStack.IncrComplexityOfCurrentScope 1
+            | SynExpr.ForEach _ -> bindingStack.IncrComplexityOfCurrentScope 1
+            | SynExpr.While (_, condition, _, _) ->
+                // include the number of boolean operators in the while condition
+                bindingStack.IncrComplexityOfCurrentScope(1 + countBooleanOperators condition)
+            | SynExpr.IfThenElse (condition, _, _, _, _, _, _) ->
+                // include the number of boolean operators in the condition
+                bindingStack.IncrComplexityOfCurrentScope(1 + countBooleanOperators condition)
+            | SynExpr.MatchBang (_, _, clauses, _)
+            | SynExpr.MatchLambda (_, _, clauses, _, _)
+            | SynExpr.Match (_, _, clauses, _) ->
+                // determine the number of cases in the match expression
+                let numCases = clauses |> List.sumBy countCasesInMatchClause
+                // include the number of boolean operators in any when expressions, if applicable
+                bindingStack.IncrComplexityOfCurrentScope(numCases + countBooleanOperators expression)
             | _ -> ()
         | _ -> ()
     
     // if the last node to be processed, pop everything off the stack
-    if args.NodeIndex >= args.SyntaxArray.Length-1 then
-            let fromStack = bindingStack
-                            |> Seq.sortBy (fun scope -> // sort by order of start position, for reporting
-                                 let pos = scope.Binding.RangeOfBindingWithRhs.Start
-                                 pos.Column, pos.Line)
-                            |> Seq.map (fun scope -> // transform into WarningDetails
-                                let errMsg = String.Format(Resources.GetString("RulesCyclomaticComplexityError"), scope.Complexity, config.MaxComplexity)
-                                { Range = scope.Binding.RangeOfBindingWithRhs; Message = errMsg; SuggestedFix = None; TypeChecks = [] })
-                            |> Seq.toList
-            let ret = match warningDetails with
-                      | Some x -> x::fromStack
-                      | None -> fromStack
-            ret |> List.toArray
+    if args.NodeIndex >= args.SyntaxArray.Length - 1 then
+        let fromStack =
+            bindingStack
+            |> Seq.sortBy (fun scope -> // sort by order of start position, for reporting
+                let pos = scope.Binding.RangeOfBindingWithRhs.Start
+                pos.Column, pos.Line)
+            |> Seq.map (fun scope -> // transform into WarningDetails
+                let errMsg =
+                    String.Format(
+                        Resources.GetString("RulesCyclomaticComplexityError"),
+                        scope.Complexity,
+                        config.MaxComplexity
+                    )
+
+                { Range = scope.Binding.RangeOfBindingWithRhs
+                  Message = errMsg
+                  SuggestedFix = None
+                  TypeChecks = [] })
+            |> Seq.toList
+
+        let ret =
+            match warningDetails with
+            | Some x -> x :: fromStack
+            | None -> fromStack
+
+        ret |> List.toArray
     else
         Array.empty
   

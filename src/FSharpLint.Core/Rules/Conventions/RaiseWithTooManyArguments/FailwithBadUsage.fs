@@ -48,7 +48,9 @@ let private runner (args: AstNodeRuleParams) =
             | EmptyMessage -> "consider using a non-empty error message as parameter"
             | DuplicateMessage -> "consider using unique error messages as parameters"
             | SwallowedException ->
-                "rather use `raise` passing the current exception as innerException (2nd parameter of Exception constructor), otherwise using `failwith` the exception details will be swallowed"
+                "rather use `raise` passing the current exception as innerException 
+(2nd parameter of Exception constructor), otherwise using `failwith` the exception 
+details will be swallowed"
             | NullMessage -> "consider using a non-null error messages as parameter"
 
         let error =
@@ -90,7 +92,12 @@ let private runner (args: AstNodeRuleParams) =
                         generateError failwithId.idText id range BadUsageType.SwallowedException (Some maybeId)
                     | _ ->
                         failwithMessages <-
-                            failwithMessages.Add(id, { FileName = range.FileName; StartLine = range.StartLine; StartColumn = range.StartColumn })
+                            failwithMessages.Add(
+                                id,
+                                { FileName = range.FileName
+                                  StartLine = range.StartLine
+                                  StartColumn = range.StartColumn }
+                            )
 
                         Array.empty
             | SynExpr.LongIdent (_, LongIdentWithDots (id, _), _, _) when

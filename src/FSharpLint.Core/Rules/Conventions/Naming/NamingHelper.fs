@@ -311,7 +311,12 @@ type GetIdents<'T> = AccessControlLevel -> SynPat -> 'T []
 
 /// Recursively get all identifiers from pattern using provided getIdents function and collect them into array.
 /// accessibility parameter is passed to getIdents, and can be narrowed down along the way (see checkAccessibility).
-let rec getPatternIdents<'T> (accessibility:AccessControlLevel) (getIdents:GetIdents<'T>) argsAreParameters (pattern:SynPat) =
+let rec getPatternIdents<'T>
+    (accessibility: AccessControlLevel)
+    (getIdents: GetIdents<'T>)
+    argsAreParameters
+    (pattern: SynPat)
+    =
     match pattern with
     | SynPat.LongIdent(_, _, _, args, access, _) ->
         let identAccessibility = checkAccessibility accessibility access
