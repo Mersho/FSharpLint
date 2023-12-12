@@ -112,70 +112,72 @@ let private checkIfPartialIdentifier (config:Config) (identifier:string) (range:
 
 let private isNonStaticInstanceMemberCall (checkFile:FSharpCheckFileResults) names range:(Option<WarningDetails>) =
 
-    let typeChecks =
-        (partialInstanceMemberIdentifiers
-        |> Map.toList
-        |> List.map (fun replacement ->
-            match replacement with
-            | (fullyQualifiedInstanceMember, replacementStrategy) ->
-                if not (fullyQualifiedInstanceMember.Contains ".") then
-                    failwith "Please use fully qualified name for the instance member"
-                let nameSegments = fullyQualifiedInstanceMember.Split '.'
-                let instanceMemberNameOnly = Array.last nameSegments
-                let isSourcePropSameAsReplacementProp = List.tryFind (fun sourceInstanceMemberName -> sourceInstanceMemberName = instanceMemberNameOnly) names
-                match isSourcePropSameAsReplacementProp with
-                | Some _ ->
-                    let typeName = fullyQualifiedInstanceMember.Substring(0, fullyQualifiedInstanceMember.Length - instanceMemberNameOnly.Length - 1)
-                    let partialAssemblySignature = checkFile.PartialAssemblySignature
+    let innerMap (instanceMember: string, strategy) =
+        match (instanceMember, strategy) with
+        | (fullyQualifiedInstanceMember, replacementStrategy) ->
+            if not (fullyQualifiedInstanceMember.Contains ".") then
+                failwith "Please use fully qualified name for the instance member"
+            let nameSegments = fullyQualifiedInstanceMember.Split '.'
+            let instanceMemberNameOnly = Array.last nameSegments
+            let isSourcePropSameAsReplacementProp = List.tryFind (fun sourceInstanceMemberName -> sourceInstanceMemberName = instanceMemberNameOnly) names
+            match isSourcePropSameAsReplacementProp with
+            | Some _ ->
+                let typeName = fullyQualifiedInstanceMember.Substring(0, fullyQualifiedInstanceMember.Length - instanceMemberNameOnly.Length - 1)
+                let partialAssemblySignature = checkFile.PartialAssemblySignature
 
-                    let isEntityOfType (entity:FSharpEntity) =
-                        match entity.TryFullName with
-                        | Some name when name = typeName -> true
-                        | _ -> false
+                let isEntityOfType (entity:FSharpEntity) =
+                    match entity.TryFullName with
+                    | Some name when name = typeName -> true
+                    | _ -> false
 
-                    let entityForType =
-                        if partialAssemblySignature.Entities.Count > 1 then
-                            Seq.tryFind isEntityOfType partialAssemblySignature.Entities
-                        else
-                            Some partialAssemblySignature.Entities.[0]
+                let entityForType =
+                    if partialAssemblySignature.Entities.Count > 1 then
+                        Seq.tryFind isEntityOfType partialAssemblySignature.Entities
+                    else
+                        Some partialAssemblySignature.Entities.[0]
 
-                    match entityForType with
-                    | Some moduleEnt ->
-                        let getFunctionValTypeName (fnVal:FSharpMemberOrFunctionOrValue) =
-                             let fsharpType = fnVal.FullType
-                             match typeName with
-                             | "Option" ->
-                                // see https://stackoverflow.com/a/70282499/544947
-                                fsharpType.HasTypeDefinition
-                                && fsharpType.TypeDefinition.Namespace = Some "Microsoft.FSharp.Core"
-                                && fsharpType.TypeDefinition.CompiledName = "option`1"
-                             | "Map" ->
+                match entityForType with
+                | Some moduleEnt ->
+                    let getFunctionValTypeName (fnVal:FSharpMemberOrFunctionOrValue) =
+                            let fsharpType = fnVal.FullType
+                            match typeName with
+                            | "Option" ->
+                            // see https://stackoverflow.com/a/70282499/544947
+                            fsharpType.HasTypeDefinition
+                            && fsharpType.TypeDefinition.Namespace = Some "Microsoft.FSharp.Core"
+                            && fsharpType.TypeDefinition.CompiledName = "option`1"
+                            | "Map" ->
                                 fsharpType.HasTypeDefinition
                                 && fsharpType.TypeDefinition.Namespace = Some "Microsoft.FSharp.Collections"
                                 && fsharpType.TypeDefinition.CompiledName = "FSharpMap`2"
-                             | "List" ->
+                            | "List" ->
                                 fsharpType.HasTypeDefinition
                                 && fsharpType.TypeDefinition.Namespace = Some "Microsoft.FSharp.Collections"
                                 && fsharpType.TypeDefinition.CompiledName = "list`1"
-                             | _ -> fnVal.FullName = typeName
+                            | _ -> fnVal.FullName = typeName
 
-                        let typeMatches = moduleEnt.MembersFunctionsAndValues.Any(Func<FSharpMemberOrFunctionOrValue, bool>(getFunctionValTypeName))
-                        if typeMatches then
-                            match replacementStrategy with
-                             | PatternMatch ->
+                    let typeMatches = moduleEnt.MembersFunctionsAndValues.Any(Func<FSharpMemberOrFunctionOrValue, bool>(getFunctionValTypeName))
+                    if typeMatches then
+                        match replacementStrategy with
+                            | PatternMatch ->
                                 Some { Range = range
                                        Message = String.Format(Resources.GetString "RulesConventionsNoPartialFunctionsPatternMatchError", fullyQualifiedInstanceMember)
                                        SuggestedFix = None
                                        TypeChecks = (fun () -> typeMatches) |> List.singleton }
-                             | Function replacementFunctionName ->
+                            | Function replacementFunctionName ->
                                 Some { Range = range
                                        Message = String.Format(Resources.GetString "RulesConventionsNoPartialFunctionsReplacementError", replacementFunctionName, fullyQualifiedInstanceMember)
                                        SuggestedFix = Some (lazy ( Some { FromText = (String.concat "." names) ; FromRange = range; ToText = replacementFunctionName }))
                                        TypeChecks = (fun () -> typeMatches) |> List.singleton }
-                        else
-                            None
-                    | _ -> None
-                | _ -> None))
+                    else
+                        None
+                | _ -> None
+            | _ -> None
+
+    let typeChecks =
+        (partialInstanceMemberIdentifiers
+        |> Map.toList
+        |> List.map innerMap)
     match List.tryFind(fun (typeCheck:Option<WarningDetails>) -> typeCheck.IsSome) typeChecks with
     | None -> None
     | Some instanceMember -> instanceMember
