@@ -228,7 +228,13 @@ Target.create "SelfCheck" (fun _ ->
     let fsharplintJsonText = File.ReadAllText fsharplintJsonDir
     let enableRecursiveAsyncFunction = fsharplintJsonText.Replace ("\"recursiveAsyncFunction\": { \"enabled\": false },",
                                                     "\"recursiveAsyncFunction\": { \"enabled\": true },")
-    File.WriteAllText (fsharplintJsonDir, enableRecursiveAsyncFunction)
+    let enableNestedStatements =
+        enableRecursiveAsyncFunction
+            .Replace (
+                "\"nestedStatements\": {\r\n        \"enabled\": false,",
+                "\"nestedStatements\": {\r\n        \"enabled\": true,"
+            )
+    File.WriteAllText (fsharplintJsonDir, enableNestedStatements)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
