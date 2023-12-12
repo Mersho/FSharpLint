@@ -234,7 +234,31 @@ Target.create "SelfCheck" (fun _ ->
                 "\"nestedStatements\": {\r\n        \"enabled\": false,",
                 "\"nestedStatements\": {\r\n        \"enabled\": true,"
             )
-    File.WriteAllText (fsharplintJsonDir, enableNestedStatements)
+    (* This rule is too complex and we can enable it later
+    let enableCyclomaticComplexity =
+        enableNestedStatements
+            .Replace (
+                "\"cyclomaticComplexity\": {\r\n        \"enabled\": false,",
+                "\"cyclomaticComplexity\": {\r\n        \"enabled\": true,"
+            )
+    *)
+
+    (* This rule must be improved and we can enable it later
+    let enableAvoidSinglePipeOperator =
+        enableNestedStatements
+            .Replace (
+                "\"avoidSinglePipeOperator\": { \"enabled\": false },",
+                "\"avoidSinglePipeOperator\": { \"enabled\": true },")
+    *)
+
+    let enableMaxLinesInLambdaFunction =
+        enableNestedStatements
+            .Replace (
+                "\"maxLinesInLambdaFunction\": {\r\n        \"enabled\": false,",
+                "\"maxLinesInLambdaFunction\": {\r\n        \"enabled\": true,"
+            )
+
+    File.WriteAllText (fsharplintJsonDir, enableMaxLinesInLambdaFunction)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
