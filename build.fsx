@@ -172,16 +172,29 @@ Target.create "Push" (fun _ ->
 
 
 Target.create "SelfCheck" (fun _ ->
-    let frameworkVersion = "net5.0"
-    let srcDir = Path.Combine(rootDir.FullName, "src") |> DirectoryInfo
+    let runLinter () =
+        let frameworkVersion = "net5.0"
+        let srcDir = Path.Combine(rootDir.FullName, "src") |> DirectoryInfo
 
-    let consoleProj = Path.Combine(srcDir.FullName, "FSharpLint.Console", "FSharpLint.Console.fsproj") |> FileInfo
-    printfn "Checking %s..." consoleProj.FullName
-    exec "dotnet" (sprintf "run --framework %s lint %s" frameworkVersion consoleProj.FullName) consoleProj.Directory.FullName
+        let consoleProj = Path.Combine(srcDir.FullName, "FSharpLint.Console", "FSharpLint.Console.fsproj") |> FileInfo
+        printfn "Checking %s..." consoleProj.FullName
+        exec "dotnet" (sprintf "run --framework %s lint %s" frameworkVersion consoleProj.FullName) consoleProj.Directory.FullName
 
-    let coreProj = Path.Combine(srcDir.FullName, "FSharpLint.Core", "FSharpLint.Core.fsproj") |> FileInfo
-    printfn "Checking %s..." coreProj.FullName
-    exec "dotnet" (sprintf "run --framework %s lint %s" frameworkVersion coreProj.FullName) consoleProj.Directory.FullName
+        let coreProj = Path.Combine(srcDir.FullName, "FSharpLint.Core", "FSharpLint.Core.fsproj") |> FileInfo
+        printfn "Checking %s..." coreProj.FullName
+        exec "dotnet" (sprintf "run --framework %s lint %s" frameworkVersion coreProj.FullName) consoleProj.Directory.FullName
+    
+    printfn "Run FsharpLint with defualt rules."
+    runLinter ()
+
+    let fsharplintJsonDir = Path.Combine("src", "FSharpLint.Core", "fsharplint.json")
+    let fsharplintJsonText = File.ReadAllText fsharplintJsonDir
+    let enableRecursiveAsyncFunction = fsharplintJsonText.Replace ("\"recursiveAsyncFunction\": { \"enabled\": false },",
+                                                    "\"recursiveAsyncFunction\": { \"enabled\": true },")
+    File.WriteAllText (fsharplintJsonDir, enableRecursiveAsyncFunction)
+
+    printfn "Re-run FsharpLint and activate all rules."
+    runLinter ()
 )
 
 // --------------------------------------------------------------------------------------
