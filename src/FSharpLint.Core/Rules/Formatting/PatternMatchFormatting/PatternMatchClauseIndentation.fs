@@ -15,28 +15,31 @@ let check (config:Config) (args:AstNodeRuleParams) matchExprRange (clauses:SynMa
     let matchStartIndentation = ExpressionUtilities.getLeadingSpaces matchExprRange args.FileContent
 
     let indentationLevelError =
+
+        let bind (firstClause: SynMatchClause) = 
+            let clauseIndentation = ExpressionUtilities.getLeadingSpaces firstClause.Range args.FileContent
+            if isLambda then
+                if clauseIndentation <> matchStartIndentation + args.GlobalConfig.numIndentationSpaces then
+                    { Range = firstClause.Range
+                      Message = Resources.GetString("RulesFormattingLambdaPatternMatchClauseIndentationError")
+                      SuggestedFix = None
+                      TypeChecks = [] } |> Some
+                else
+                    None
+            elif clauseIndentation <> matchStartIndentation then
+                { Range = firstClause.Range
+                  Message = Resources.GetString("RulesFormattingPatternMatchClauseIndentationError")
+                  SuggestedFix = None
+                  TypeChecks = [] } |> Some
+            else
+                None
+
         if isLambda && config.AllowSingleLineLambda && clauses |> List.forall (fun clause -> clause.Range.StartLine = matchExprRange.StartLine) then
             None
         else
             clauses
             |> List.tryHead
-            |> Option.bind (fun firstClause ->
-                let clauseIndentation = ExpressionUtilities.getLeadingSpaces firstClause.Range args.FileContent
-                if isLambda then
-                    if clauseIndentation <> matchStartIndentation + args.GlobalConfig.numIndentationSpaces then
-                        { Range = firstClause.Range
-                          Message = Resources.GetString("RulesFormattingLambdaPatternMatchClauseIndentationError")
-                          SuggestedFix = None
-                          TypeChecks = [] } |> Some
-                    else
-                        None
-                elif clauseIndentation <> matchStartIndentation then
-                    { Range = firstClause.Range
-                      Message = Resources.GetString("RulesFormattingPatternMatchClauseIndentationError")
-                      SuggestedFix = None
-                      TypeChecks = [] } |> Some
-                else
-                    None)
+            |> Option.bind bind
 
     let consistentIndentationErrors =
         clauses
