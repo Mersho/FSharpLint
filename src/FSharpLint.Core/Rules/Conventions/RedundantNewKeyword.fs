@@ -16,7 +16,7 @@ let private implementsIDisposable (fsharpType:FSharpType) =
     else
         false
 
-let private doesNotImplementIDisposable (checkFile:FSharpCheckFileResults) (ident:LongIdentWithDots) = fun () -> 
+let private doesNotImplementIDisposable (checkFile:FSharpCheckFileResults) (ident:LongIdentWithDots) =
     let names = ident.Lid |> List.map (fun x -> x.idText)
     let symbol = checkFile.GetSymbolUseAtLocation(ident.Range.StartLine, ident.Range.EndColumn, "", names)
 
@@ -48,7 +48,7 @@ let runner args =
         { Range = range
           Message = Resources.GetString("RulesRedundantNewKeyword")
           SuggestedFix = Some (generateFix args.FileContent range)
-          TypeChecks = [ doesNotImplementIDisposable checkInfo identifier ] } |> Array.singleton
+          TypeChecks = [ fun () -> doesNotImplementIDisposable checkInfo identifier ] } |> Array.singleton
     | _ -> Array.empty
 
 let rule =
