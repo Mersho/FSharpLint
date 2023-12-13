@@ -355,8 +355,15 @@ Target.create "SelfCheck" (fun _ ->
                 "\"favourConsistentThis\": {\r\n        \"enabled\": false,",
                 "\"favourConsistentThis\": {\r\n        \"enabled\": true,"
             )
+    
+    let enableAvoidTooShortNames = 
+        enableFavourConsistentThis
+            .Replace (
+                "\"avoidTooShortNames\": { \"enabled\": false },",
+                "\"avoidTooShortNames\": { \"enabled\": true },"
+            )
 
-    File.WriteAllText (fsharplintJsonDir, enableFavourConsistentThis)
+    File.WriteAllText (fsharplintJsonDir, enableAvoidTooShortNames)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
