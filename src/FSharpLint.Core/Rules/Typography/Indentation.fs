@@ -28,7 +28,7 @@ module ContextBuilder =
             | other ->
                 (other::items)
 
-        helper [] seqExpr
+        helper List.Empty seqExpr
         |> List.rev
 
     let private createAbsoluteAndOffsetOverrides expectedIndentation (rangeToUpdate:Range) =
@@ -47,14 +47,14 @@ module ContextBuilder =
                 |> List.concat
             fields::subRecords
         | _ ->
-            []
+            List.Empty
 
     let private createAbsoluteAndOffsetOverridesBasedOnFirst (ranges:Range list) =
         match ranges with
         | (first::others) ->
             let expectedIndentation = first.StartColumn
             others |> List.map (fun other -> (other.StartLine, (true, expectedIndentation)))
-        | _ -> []
+        | _ -> List.Empty
 
     let private indentationOverridesForNode (node:AstNode) =
         match node with
@@ -90,7 +90,7 @@ module ContextBuilder =
             match funcExpr with
             | SynExpr.Ident ident when ident.idText = "op_ColonEquals" ->
                 // := for reference cell assignment should be handled like normal equals, not like an infix operator.
-                []
+                List.Empty
             | _ ->
                 let expectedIndentation = innerArg.Range.StartColumn
                 createAbsoluteAndOffsetOverrides expectedIndentation outerArg.Range
@@ -110,7 +110,7 @@ module ContextBuilder =
             |> List.map (fun ((_, fieldIdent), _) -> fieldIdent.idRange)
             |> firstRangePerLine
             |> createAbsoluteAndOffsetOverridesBasedOnFirst
-        | _ -> []
+        | _ -> List.Empty
 
     let builder current node =
         indentationOverridesForNode node
@@ -120,7 +120,7 @@ module ContextBuilder =
 let checkIndentation (expectedSpaces:int) (line:string) (lineNumber:int) (indentationOverrides:Map<int,bool*int>) =
     let lineTrimmedStart = line.TrimStart()
     let numLeadingSpaces = line.Length - lineTrimmedStart.Length
-    let range = Range.mkRange "" (Position.mkPos lineNumber 0) (Position.mkPos lineNumber numLeadingSpaces)
+    let range = Range.mkRange String.Empty (Position.mkPos lineNumber 0) (Position.mkPos lineNumber numLeadingSpaces)
 
     if lineTrimmedStart.StartsWith "//" || lineTrimmedStart.StartsWith "(*" then
         None
