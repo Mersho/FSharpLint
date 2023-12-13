@@ -23,7 +23,7 @@ let checkModuleDeclSpacing (args:AstNodeRuleParams) synModuleOrNamespace =
                     else 0
 
                 Range.mkRange
-                    ""
+                    String.Empty
                     (Position.mkPos (declOne.Range.EndLine + 1) 0)
                     (Position.mkPos (declTwo.Range.StartLine + endOffset) 0)
             { Range = intermediateRange

@@ -54,7 +54,7 @@ let checkRecursiveAsyncFunction (args:AstNodeRuleParams) (range:Range) (doBangEx
                 bindings
             | AstNode.Expression (SynExpr.LetOrUse (true, false, bindings, _, _)) ->
                 bindings
-            | _ -> [])
+            | _ -> List.Empty)
         |> List.choose getFunctionNameFromAsyncCompExprBinding
         |> List.filter ((=) callerIdent.idText)
         |> List.choose (fun _ -> suggestFix ())

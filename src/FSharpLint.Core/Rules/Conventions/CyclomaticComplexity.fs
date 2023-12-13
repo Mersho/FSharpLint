@@ -38,7 +38,7 @@ type private BindingScopeComparer() =
     
 ///  A two-tiered stack-like structure for containing BindingScopes.
 type private BindingStack(maxComplexity: int) =
-    let mutable tier1 = []
+    let mutable tier1 = List.Empty
     let mutable tier2 = SortedSet<BindingScope>(BindingScopeComparer())
     
     member this.Push (args:AstNodeRuleParams) (bs: BindingScope) =
@@ -76,7 +76,7 @@ type private BindingStack(maxComplexity: int) =
         
     /// Clears the stack.
     member this.Clear() =
-        tier1 <- []
+        tier1 <- List.Empty
         tier2.Clear()
 
 /// A stack to track the current cyclomatic complexity of a binding scope.
