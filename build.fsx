@@ -307,7 +307,14 @@ Target.create "SelfCheck" (fun _ ->
                 "\"maxLinesInModule\": {\r\n        \"enabled\": true,"
             )
 
-    File.WriteAllText (fsharplintJsonDir, enablemaxLinesInModule)
+    let enablemaxLinesInRecord =
+        enablemaxLinesInModule
+            .Replace (
+                "\"maxLinesInRecord\": {\r\n        \"enabled\": false,",
+                "\"maxLinesInRecord\": {\r\n        \"enabled\": true,"
+            )
+
+    File.WriteAllText (fsharplintJsonDir, enablemaxLinesInRecord)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
