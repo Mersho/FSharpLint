@@ -78,7 +78,7 @@ let runner (config:Config) (args:AstNodeRuleParams) =
         // NOTE: This currently does not work for fields in union cases, since the range on union case fields is incorrect,
         // only including the type and not the field name. (https://github.com/dotnet/fsharp/issues/9279)
         checkRange config args range |> Option.toArray
-    | _ -> [||]
+    | _ -> Array.empty
 
 let rule config =
     { Name = "TypedItemSpacing"

@@ -1,5 +1,7 @@
 module FSharpLint.Rules.FavourStaticEmptyFields
 
+open System
+
 open FSharpLint.Framework
 open FSharpLint.Framework.Suggestion
 open FSharp.Compiler.Syntax

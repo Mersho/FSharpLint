@@ -13,14 +13,14 @@ open FSharp.Compiler.Symbols
 
 module QuickFixes =
     let removeAllUnderscores (ident:Ident) = lazy(
-        let toText = ident.idText.Replace("_", "")
+        let toText = ident.idText.Replace("_", String.Empty)
         Some { FromText = ident.idText; FromRange = ident.idRange; ToText = toText })
 
     let removeNonPrefixingUnderscores (ident:Ident) = lazy(
         let prefixingUnderscores =
             ident.idText |> Seq.takeWhile (fun x -> x = '_') |> String.Concat
 
-        let toText = prefixingUnderscores + ident.idText.Replace("_", "")
+        let toText = prefixingUnderscores + ident.idText.Replace("_", String.Empty)
         Some { FromText = ident.idText; FromRange = ident.idRange; ToText = toText })
 
     let addPrefix prefix (ident:Ident) = lazy(
@@ -37,7 +37,7 @@ module QuickFixes =
             let firstChar = map withoutPrefix.[0] |> string
             let rest = withoutPrefix.Substring 1
             prefix + firstChar + rest
-        else ""
+        else String.Empty
 
     let toPascalCase (ident:Ident) = lazy(
         let pascalCaseIdent = ident.idText |> mapFirstChar Char.ToUpper
@@ -261,7 +261,7 @@ let isMeasureType = isAttribute "Measure"
 
 let isNotUnionCase (checkFile:FSharpCheckFileResults) (ident:Ident) =
     let symbol = checkFile.GetSymbolUseAtLocation(
-                    ident.idRange.StartLine, ident.idRange.EndColumn, "", [ident.idText])
+                    ident.idRange.StartLine, ident.idRange.EndColumn, String.Empty, [ident.idText])
 
     match symbol with
     | Some(symbol) when (symbol.Symbol :? FSharpUnionCase) -> false
