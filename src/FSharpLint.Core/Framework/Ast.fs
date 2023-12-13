@@ -236,7 +236,13 @@ module Ast =
         | SynPat.LongIdent(_, _, _, constructorArguments, _, _) ->
             add <| ConstructorArguments constructorArguments
 
+    // FIXME: This rule has to be fixed to not count the comments
+    // fsharplint:disable-next-line MaxLinesInFunction
     let inline private expressionChildren node add =
+        let addMany exprs =
+            for expr in exprs do
+                add <| expr
+
         match node with
         | SynExpr.Paren(expression, _, _, _)
         | SynExpr.DotGet(expression, _, _, _)
@@ -255,9 +261,7 @@ module Ast =
         | SynExpr.YieldOrReturn(_, expression, _)
         | SynExpr.YieldOrReturnFrom(_, expression, _) -> add <| Expression expression
         | SynExpr.SequentialOrImplicitYield(_, expression1, expression2, ifNotExpression, _) ->
-            add <| Expression expression1
-            add <| Expression expression2
-            add <| Expression ifNotExpression
+            addMany [Expression expression1; Expression expression2; Expression ifNotExpression]
         | SynExpr.Quote(expression, _, expression1, _, _)
         | SynExpr.Sequential(_, _, expression, expression1, _)
         | SynExpr.NamedIndexedPropertySet(_, expression, expression1, _)
@@ -267,11 +271,9 @@ module Ast =
         | SynExpr.TryFinally(expression, expression1, _, _, _)
         | SynExpr.Set(expression, expression1, _)
         | SynExpr.DotSet(expression, _, expression1, _) ->
-            add <| Expression expression1
-            add <| Expression expression
+            addMany [Expression expression1; Expression expression]
         | SynExpr.Typed(expression, synType, _) ->
-            add <| Type synType
-            add <| Expression expression
+            addMany [Type synType; Expression expression]
         | SynExpr.Tuple(_, expressions, _, _)
         | SynExpr.ArrayOrList(_, expressions, _) -> expressions |> List.revIter (Expression >> add)
         | SynExpr.Record(_, Some(expr, _), _, _) -> add <| Expression expr
@@ -282,34 +284,18 @@ module Ast =
         | SynExpr.ObjExpr(synType, _, bindings, _, _, _) ->
             bindings |> List.revIter (Binding >> add)
             add <| Type synType
-        | SynExpr.ImplicitZero(_)
-        | SynExpr.Null(_)
-        | SynExpr.Const(_)
-        | SynExpr.DiscardAfterMissingQualificationAfterDot(_)
-        | SynExpr.FromParseError(_)
-        | SynExpr.LibraryOnlyILAssembly(_)
-        | SynExpr.LibraryOnlyStaticOptimization(_)
-        | SynExpr.LibraryOnlyUnionCaseFieldGet(_)
-        | SynExpr.LibraryOnlyUnionCaseFieldSet(_)
-        | SynExpr.ArbitraryAfterError(_) -> ()
         | SynExpr.DotNamedIndexedPropertySet(expression, _, expression1, expression2, _)
         | SynExpr.For(_, _, expression, _, expression1, expression2, _) ->
-            add <| Expression expression2
-            add <| Expression expression1
-            add <| Expression expression
+            addMany [Expression expression2; Expression expression1; Expression expression]
         | SynExpr.LetOrUseBang(_, _, _, pattern, rightHandSide, andBangs, leftHandSide, _) ->
-            add <| Expression rightHandSide
-            add <| Expression leftHandSide
+            addMany [Expression rightHandSide; Expression leftHandSide]
             // TODO: is the the correct way to handle the new `and!` syntax?
             andBangs |> List.iter (fun (_, _, _, pattern, body, _) ->
-                add <| Expression body
-                add <| Pattern pattern
+                addMany [Expression body; Pattern pattern]
             )
             add <| Pattern pattern
         | SynExpr.ForEach(_, _, _, pattern, expression, expression1, _) ->
-            add <| Expression expression1
-            add <| Expression expression
-            add <| Pattern pattern
+            addMany [Expression expression1; Expression expression; Pattern pattern]
         | SynExpr.MatchLambda(_, _, matchClauses, _, _) ->
             matchClauses |> List.revIter (Match >> add)
         | SynExpr.TryWith(expression, _, matchClauses, _, _, _, _)
@@ -324,8 +310,7 @@ module Ast =
         | SynExpr.TypeTest(expression, synType, _)
         | SynExpr.Upcast(expression, synType, _)
         | SynExpr.Downcast(expression, synType, _) ->
-            add <| Type synType
-            add <| Expression expression
+            addMany [Type synType; Expression expression]
         | SynExpr.LetOrUse(_, _, bindings, expression, _) ->
             add <| Expression expression
             bindings |> List.revIter (Binding >> add)
@@ -333,12 +318,9 @@ module Ast =
         | SynExpr.LongIdent(_, LongIdentWithDots(ident, _), _, range) ->
             add <| Identifier(ident |> List.map (fun x -> x.idText), range)
         | SynExpr.IfThenElse(cond, body, Some(elseExpr), _, _, _, _) ->
-            add <| Else elseExpr
-            add <| Expression body
-            add <| Expression cond
+            addMany [Else elseExpr; Expression body; Expression cond]
         | SynExpr.IfThenElse(cond, body, None, _, _, _, _) ->
-            add <| Expression body
-            add <| Expression cond
+            addMany [Expression body; Expression cond]
         | SynExpr.InterpolatedString(contents, _, range) -> 
             contents
             |> List.iter (
@@ -348,9 +330,22 @@ module Ast =
                     | SynInterpolatedStringPart.FillExpr (expr, _ident) ->
                         add <| Expression expr
             )
+        (*
+        | SynExpr.ImplicitZero(_)
+        | SynExpr.Null(_)
+        | SynExpr.Const(_)
+        | SynExpr.DiscardAfterMissingQualificationAfterDot(_)
+        | SynExpr.FromParseError(_)
+        | SynExpr.LibraryOnlyILAssembly(_)
+        | SynExpr.LibraryOnlyStaticOptimization(_)
+        | SynExpr.LibraryOnlyUnionCaseFieldGet(_)
+        | SynExpr.LibraryOnlyUnionCaseFieldSet(_)
+        | SynExpr.ArbitraryAfterError(_)
         | SynExpr.Lambda(_)
         | SynExpr.App(_)
         | SynExpr.Fixed(_) -> ()
+        *)
+        | _ -> ()
 
     let inline private typeSimpleRepresentationChildren node add =
         match node with
