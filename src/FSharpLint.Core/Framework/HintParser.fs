@@ -231,7 +231,7 @@ module HintParser =
                 [HintExpr ifCond; HintExpr bodyExpr; HintExpr elseExpr]
             | HintExpr(Expression.If(ifCond, bodyExpr, None)) ->
                 [HintExpr ifCond; HintExpr bodyExpr]
-            | HintExpr(Expression.Else(x)) -> [HintExpr x]
+            | HintExpr(Expression.Else(expression)) -> [HintExpr expression]
             | HintExpr(Expression.Identifier(_))
             | HintExpr(Expression.Constant(_))
             | HintExpr(Expression.Null)
@@ -250,24 +250,24 @@ module HintParser =
             | HintPat(Pattern.Null) -> List.Empty
 
         let private getConstantHashCode = function
-            | Constant.Bool(x) -> hash x
-            | Constant.Byte(x) -> hash x
-            | Constant.Bytes(x) -> hash x
-            | Constant.Char(x) -> hash x
-            | Constant.Decimal(x) -> hash x
-            | Constant.Double(x) -> hash x
-            | Constant.Int16(x) -> hash x
-            | Constant.Int32(x) -> hash x
-            | Constant.Int64(x) -> hash x
-            | Constant.IntPtr(x) -> hash x
-            | Constant.SByte(x) -> hash x
-            | Constant.Single(x) -> hash x
-            | Constant.String(x) -> hash x
-            | Constant.UInt16(x) -> hash x
-            | Constant.UInt32(x) -> hash x
-            | Constant.UInt64(x) -> hash x
-            | Constant.UIntPtr(x) -> hash x
-            | Constant.UserNum(x, y) -> hash (x, y)
+            | Constant.Bool value -> hash value
+            | Constant.Byte value -> hash value
+            | Constant.Bytes value -> hash value
+            | Constant.Char value -> hash value
+            | Constant.Decimal value -> hash value
+            | Constant.Double value -> hash value
+            | Constant.Int16 value -> hash value
+            | Constant.Int32 value -> hash value
+            | Constant.Int64 value -> hash value
+            | Constant.IntPtr value -> hash value
+            | Constant.SByte value -> hash value
+            | Constant.Single value -> hash value
+            | Constant.String value -> hash value
+            | Constant.UInt16 value -> hash value
+            | Constant.UInt32 value -> hash value
+            | Constant.UInt64 value -> hash value
+            | Constant.UIntPtr value -> hash value
+            | Constant.UserNum(intValue, charValue) -> hash (intValue, charValue)
             | _ -> 0
 
         let private getIdentifierHashCode = function
@@ -390,10 +390,10 @@ module HintParser =
     let charListToString charList =
         Seq.fold (fun x y -> x + y.ToString()) String.Empty charList
 
-    let pischar chars : Parser<char, 'T> =
+    let pischar chars : Parser<char, 'Type> =
         satisfy (fun x -> List.exists ((=) x) chars)
 
-    let pnotchar chars : Parser<char, 'T> =
+    let pnotchar chars : Parser<char, 'Type> =
         satisfy (fun x -> not <| List.exists ((=) x) chars)
 
     module Operators =
@@ -784,7 +784,7 @@ module HintParser =
             satisfy isLetter
             .>> notFollowedBy (satisfy isLetter)
 
-        let ptuple (pparser:Parser<'T, unit>) : Parser<'T list, unit> =
+        let ptuple (pparser:Parser<'Type, unit>) : Parser<'Type list, unit> =
             skipChar '('
             >>. pparser
             .>> skipChar ','
@@ -792,14 +792,14 @@ module HintParser =
             .>> skipChar ')'
             |>> fun (func, rest) -> (func::rest)
 
-        let plist (pparser:Parser<'T, unit>): Parser<'T list, unit> =
+        let plist (pparser:Parser<'Type, unit>): Parser<'Type list, unit> =
             skipChar '['
             >>. spaces
             >>. sepEndBy pparser (skipChar ';')
             .>> spaces
             .>> skipChar ']'
 
-        let parray (pparser:Parser<'T, unit>): Parser<'T list, unit> =
+        let parray (pparser:Parser<'Type, unit>): Parser<'Type list, unit> =
             skipString "[|"
             >>. spaces
             >>. sepEndBy pparser (skipChar ';')
@@ -1065,24 +1065,24 @@ module HintParser =
 
     let pexpressionbasedhint =
         parse {
-            let! m = Expressions.pexpression
+            let! expression = Expressions.pexpression
 
             do! phintcenter
 
-            let! s = psuggestion
+            let! suggestion = psuggestion
 
-            return { MatchedNode = HintExpr m; Suggestion = s }
+            return { MatchedNode = HintExpr expression; Suggestion = suggestion }
         }
 
     let ppatternbasedhint =
         parse {
-            let! m = Patterns.ppattern
+            let! pattern = Patterns.ppattern
 
             do! phintcenter
 
-            let! s = psuggestion
+            let! suggestion = psuggestion
 
-            return { MatchedNode = HintPat m; Suggestion = s }
+            return { MatchedNode = HintPat pattern; Suggestion = suggestion }
         }
 
     let phint: Parser<Hint, unit> =
