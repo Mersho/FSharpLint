@@ -206,6 +206,7 @@ Target.create "SelfCheck" (fun _ ->
             "maxLinesInMember"
             "maxLinesInConstructor"
             "maxLinesInProperty"
+            "maxLinesInModule"
         ]
 
     let jsonObj = JObject.Parse fsharplintJsonText
