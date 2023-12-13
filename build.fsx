@@ -342,7 +342,14 @@ Target.create "SelfCheck" (fun _ ->
                 "\"favourTypedIgnore\": { \"enabled\": true },"
             )
 
-    File.WriteAllText (fsharplintJsonDir, enableFavourTypedIgnore)
+    let enableFavourStaticEmptyFields = 
+        enableFavourTypedIgnore
+            .Replace (
+                "\"favourStaticEmptyFields\": { \"enabled\": false },",
+                "\"favourStaticEmptyFields\": { \"enabled\": true },"
+            )
+
+    File.WriteAllText (fsharplintJsonDir, enableFavourStaticEmptyFields)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
