@@ -213,6 +213,7 @@ Target.create "SelfCheck" (fun _ ->
             "maxLinesInClass"
             "favourTypedIgnore"
             "favourStaticEmptyFields"
+            "favourConsistentThis"
         ]
 
     let jsonObj = JObject.Parse fsharplintJsonText
