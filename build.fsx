@@ -297,8 +297,15 @@ Target.create "SelfCheck" (fun _ ->
                 "\"maxLinesInClass\": {\r\n        \"enabled\": false,",
                 "\"maxLinesInClass\": {\r\n        \"enabled\": true,"
             )
+    
+    let enableFavourTypedIgnore = 
+        enableMaxLinesInClass
+            .Replace (
+                "\"favourTypedIgnore\": { \"enabled\": false },",
+                "\"favourTypedIgnore\": { \"enabled\": true },"
+            )
 
-    File.WriteAllText (fsharplintJsonDir, enableMaxLinesInClass)
+    File.WriteAllText (fsharplintJsonDir, enableFavourTypedIgnore)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
