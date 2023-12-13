@@ -57,9 +57,9 @@ type private BindingStack(maxComplexity: int) =
         tier1 <- bs::tier1
         
     member this.IncrComplexityOfCurrentScope incr =
-        let h = tier1.Head
-        let complexity = h.Complexity + incr
-        tier1 <- {h with Complexity = complexity}::tier1.Tail
+        let head = tier1.Head
+        let complexity = head.Complexity + incr
+        tier1 <- {head with Complexity = complexity}::tier1.Tail
         
     interface IEnumerable<BindingScope> with
         member this.GetEnumerator() =
@@ -197,7 +197,7 @@ let runner (config:Config) (args:AstNodeRuleParams) : WarningDetails[] =
                                 { Range = scope.Binding.RangeOfBindingWithRhs; Message = errMsg; SuggestedFix = None; TypeChecks = [] })
                             |> Seq.toList
             let ret = match warningDetails with
-                      | Some x -> x::fromStack
+                      | Some warning -> warning::fromStack
                       | None -> fromStack
             ret |> List.toArray
     else

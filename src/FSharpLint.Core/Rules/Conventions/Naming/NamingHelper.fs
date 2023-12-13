@@ -55,7 +55,7 @@ let private NumberOfExpectedBackticks = 4
 /// the information as to whether the identifier was backticked doesn't appear to be in the AST.
 let private isNotDoubleBackTickedIdent =
     let isDoubleBackTickedIdent (identifier:Ident) =
-        let diffOfRangeAgainstIdent (r:Range) = (r.EndColumn - r.StartColumn) - identifier.idText.Length
+        let diffOfRangeAgainstIdent (range:Range) = (range.EndColumn - range.StartColumn) - identifier.idText.Length
 
         let range = identifier.idRange
         not range.IsSynthetic && diffOfRangeAgainstIdent range = NumberOfExpectedBackticks
@@ -189,16 +189,16 @@ type AccessControlLevel =
     | Private
     | Internal
 
-let getAccessControlLevel (syntaxArray:AbstractSyntaxArray.Node []) i =
+let getAccessControlLevel (syntaxArray:AbstractSyntaxArray.Node []) index =
     let resolveAccessControlLevel = function
         | Some(SynAccess.Public) | None -> AccessControlLevel.Public
         | Some(SynAccess.Private) -> AccessControlLevel.Private
         | Some(SynAccess.Internal) -> AccessControlLevel.Internal
 
-    let rec getAccessibility state isPrivateWhenReachedBinding i =
-        if i = 0 then state
+    let rec getAccessibility state isPrivateWhenReachedBinding index =
+        if index = 0 then state
         else
-            let node = syntaxArray.[i]
+            let node = syntaxArray.[index]
             match node.Actual with
             | TypeSimpleRepresentation(SynTypeDefnSimpleRepr.Record(access, _, _))
             | TypeSimpleRepresentation(SynTypeDefnSimpleRepr.Union(access, _, _))
@@ -236,7 +236,7 @@ let getAccessControlLevel (syntaxArray:AbstractSyntaxArray.Node []) i =
             | LambdaBody(_)
             | Expression(_) -> getAccessibility state true node.ParentIndex
 
-    getAccessibility AccessControlLevel.Public false i
+    getAccessibility AccessControlLevel.Public false index
 
 
 /// Is an attribute with a given name?
@@ -299,19 +299,19 @@ let isModule (moduleKind:SynModuleOrNamespaceKind) =
 
 /// Is module name implicitly created from file name?
 let isImplicitModule (SynModuleOrNamespace.SynModuleOrNamespace(longIdent, _, moduleKind, _, _, _, _, range)) =
-    let zeroLengthRange (r:Range) =
-        (r.EndColumn - r.StartColumn) = 0 && r.StartLine = r.EndLine
+    let zeroLengthRange (range:Range) =
+        (range.EndColumn - range.StartColumn) = 0 && range.StartLine = range.EndLine
 
     // Check the identifiers in the module name have no length.
     // Not ideal but there's no attribute in the AST indicating the module is implicit from the file name.
     // TODO: does SynModuleOrNamespaceKind.AnonModule replace this check?
     isModule moduleKind && longIdent |> List.forall (fun x -> zeroLengthRange x.idRange)
 
-type GetIdents<'T> = AccessControlLevel -> SynPat -> 'T []
+type GetIdents<'Type> = AccessControlLevel -> SynPat -> 'Type []
 
 /// Recursively get all identifiers from pattern using provided getIdents function and collect them into array.
 /// accessibility parameter is passed to getIdents, and can be narrowed down along the way (see checkAccessibility).
-let rec getPatternIdents<'T> (accessibility:AccessControlLevel) (getIdents:GetIdents<'T>) argsAreParameters (pattern:SynPat) =
+let rec getPatternIdents<'Type> (accessibility:AccessControlLevel) (getIdents:GetIdents<'Type>) argsAreParameters (pattern:SynPat) =
     match pattern with
     | SynPat.LongIdent(_, _, _, args, access, _) ->
         let identAccessibility = checkAccessibility accessibility access

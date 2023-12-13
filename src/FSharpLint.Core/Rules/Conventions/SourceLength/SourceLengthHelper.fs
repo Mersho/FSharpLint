@@ -8,9 +8,9 @@ open FSharp.Compiler.Text
 [<RequireQualifiedAccess>]
 type Config = { MaxLines:int }
 
-let private error name i actual =
+let private error name lineCount actual =
     let errorFormatString = Resources.GetString("RulesSourceLengthError")
-    String.Format(errorFormatString, name, i, actual)
+    String.Format(errorFormatString, name, lineCount, actual)
 
 let private length (range:Range) = range.EndLine - range.StartLine
 
