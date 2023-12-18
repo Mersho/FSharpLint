@@ -363,7 +363,14 @@ Target.create "SelfCheck" (fun _ ->
                 "\"avoidTooShortNames\": { \"enabled\": true },"
             )
 
-    File.WriteAllText (fsharplintJsonDir, enableAvoidTooShortNames)
+    let enableAsyncExceptionWithoutReturn = 
+        enableAvoidTooShortNames
+            .Replace (
+                "\"asyncExceptionWithoutReturn\": { \"enabled\": false },",
+                "\"asyncExceptionWithoutReturn\": { \"enabled\": true },"
+            )
+
+    File.WriteAllText (fsharplintJsonDir, enableAsyncExceptionWithoutReturn)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
