@@ -370,7 +370,14 @@ Target.create "SelfCheck" (fun _ ->
                 "\"asyncExceptionWithoutReturn\": { \"enabled\": true },"
             )
 
-    File.WriteAllText (fsharplintJsonDir, enableAsyncExceptionWithoutReturn)
+    let enableNoPartialFunctions =
+        enableAsyncExceptionWithoutReturn
+            .Replace (
+                "\"noPartialFunctions\": {\r\n        \"enabled\": false,",
+                "\"noPartialFunctions\": {\r\n        \"enabled\": true,"
+            )
+
+    File.WriteAllText (fsharplintJsonDir, enableNoPartialFunctions)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
