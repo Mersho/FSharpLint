@@ -216,6 +216,7 @@ Target.create "SelfCheck" (fun _ ->
             "favourConsistentThis"
             "avoidTooShortNames"
             "asyncExceptionWithoutReturn"
+            "noPartialFunctions"
         ]
 
     let jsonObj = JObject.Parse fsharplintJsonText
