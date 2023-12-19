@@ -28,7 +28,7 @@ let checkNoTabCharacters literalStrings (args:LineRuleParams) =
         if isInLiteralString literalStrings range |> not then
             { Range = range
               Message = Resources.GetString("RulesTypographyTabCharacterError")
-              SuggestedFix = None
+              SuggestedFix = Some (lazy(Some({ FromRange = range; FromText = "\t"; ToText = String.replicate 4 " " })))
               TypeChecks = [] } |> Array.singleton
         else
             Array.empty
