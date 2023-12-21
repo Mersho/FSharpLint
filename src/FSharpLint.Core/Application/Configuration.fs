@@ -568,10 +568,10 @@ let loadConfig (configPath:string) =
 let defaultConfiguration =
     let assembly = typeof<Rules.Rule>.GetTypeInfo().Assembly
     let resourceName = Assembly.GetExecutingAssembly().GetManifestResourceNames()
-                       |> Seq.find (fun resourceFile -> resourceFile.EndsWith("fsharplint.json", System.StringComparison.Ordinal))
-    use stream = assembly.GetManifestResourceStream(resourceName)
+                       |> Seq.tryFind (fun resourceFile -> resourceFile.EndsWith("fsharplint.json", System.StringComparison.Ordinal))
+    use stream = assembly.GetManifestResourceStream(resourceName.Value)
     match stream with
-    | null -> failwithf "Resource '%s' not found in assembly '%s'" resourceName (assembly.FullName)
+    | null -> failwithf "Resource '%s' not found in assembly '%s'" resourceName.Value (assembly.FullName)
     | stream ->
         use reader = new System.IO.StreamReader(stream)
 

@@ -58,6 +58,8 @@ NUGET
       FSharp.Core (>= 4.7.2)
       System.Reactive (>= 5.0)
     FSharp.Core (5.0.2)
+    FSharpx.Collections (3.1)
+      FSharp.Core (>= 4.3.4)
     Iced (1.12)
     Ionide.ProjInfo (0.53.1) - restriction: || (== net5.0) (&& (== netstandard2.0) (>= net5.0))
       FSharp.Core (>= 5.0.2) - restriction: || (== net5.0) (&& (== netstandard2.0) (>= net5.0))
