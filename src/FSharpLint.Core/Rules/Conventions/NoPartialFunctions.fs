@@ -118,11 +118,11 @@ let private isNonStaticInstanceMemberCall (checkFile:FSharpCheckFileResults) nam
             if not (fullyQualifiedInstanceMember.Contains ".") then
                 failwith "Please use fully qualified name for the instance member"
             let nameSegments = fullyQualifiedInstanceMember.Split '.'
-            let instanceMemberNameOnly = Array.last nameSegments
-            let isSourcePropSameAsReplacementProp = List.tryFind (fun sourceInstanceMemberName -> sourceInstanceMemberName = instanceMemberNameOnly) names
+            let instanceMemberNameOnly = Array.tryLast nameSegments
+            let isSourcePropSameAsReplacementProp = List.tryFind (fun sourceInstanceMemberName -> sourceInstanceMemberName = instanceMemberNameOnly.Value) names
             match isSourcePropSameAsReplacementProp with
             | Some _ ->
-                let typeName = fullyQualifiedInstanceMember.Substring(0, fullyQualifiedInstanceMember.Length - instanceMemberNameOnly.Length - 1)
+                let typeName = fullyQualifiedInstanceMember.Substring(0, fullyQualifiedInstanceMember.Length - instanceMemberNameOnly.Value.Length - 1)
                 let partialAssemblySignature = checkFile.PartialAssemblySignature
 
                 let isEntityOfType (entity:FSharpEntity) =
