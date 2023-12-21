@@ -29,6 +29,8 @@ module ExpressionUtilities =
     open FSharp.Compiler.Text
     open FSharp.Compiler.CodeAnalysis
 
+    open FSharpx.Collections
+
     let (|Identifier|_|) = function
         | SynExpr.Ident(ident) -> Some([ident], ident.idRange)
         | SynExpr.LongIdent(_, longIdent, _, _) -> Some(longIdent.Lid, longIdent.Range)
@@ -117,15 +119,19 @@ module ExpressionUtilities =
     let countPrecedingCommentLines (text:string) (startPos:pos) (endPos:pos) =
         let range = Range.mkRange String.Empty startPos endPos
 
-        tryFindTextOfRange range text
-        |> Option.map (fun precedingText ->
+        let processingComment (text:string) =
             let lines =
-                precedingText.Split '\n'
-                |> Array.rev
-                |> Array.tail
-            lines
-            |> Array.takeWhile (fun line -> line.TrimStart().StartsWith("//"))
-            |> Array.length)
+                text.Split '\n'
+                |> Seq.rev
+            match Seq.tryHeadTail lines with
+            | Some (_, tail) ->
+                tail
+                |> Seq.takeWhile (fun line -> line.TrimStart().StartsWith("//"))
+                |> Seq.length
+            | None -> 0
+
+        tryFindTextOfRange range text
+        |> Option.map (processingComment)
         |> Option.defaultValue 0
 
     let rangeContainsOtherRange (containingRange:Range) (range:Range) =
