@@ -9,7 +9,7 @@ open FSharpLint.Framework.Rules
 
 let private validateLambdaCannotBeReplacedWithComposition _ lambda range =
     let canBeReplacedWithFunctionComposition expression =
-        let getLastElement = List.rev >> List.head
+        let getLastElement = List.rev >> List.tryHead
 
         let rec lambdaArgumentIsLastApplicationInFunctionCalls expression (lambdaArgument:Ident) numFunctionCalls =
             let rec appliedValuesAreConstants appliedValues =
@@ -24,7 +24,7 @@ let private validateLambdaCannotBeReplacedWithComposition _ lambda range =
                 | (SynExpr.Ident(_) | SynExpr.LongIdent(_))::appliedValues
                         when appliedValuesAreConstants appliedValues ->
 
-                    match getLastElement appliedValues with
+                    match (getLastElement appliedValues).Value with
                     | SynExpr.Ident(lastArgument) when numFunctionCalls > 1 ->
                         lastArgument.idText = lambdaArgument.idText
                     | SynExpr.App(_, false, _, _, _) as nextFunction ->
