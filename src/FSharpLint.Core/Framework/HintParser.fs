@@ -272,8 +272,8 @@ module HintParser =
 
         let private getIdentifierHashCode = function
             | identifier when (List.isEmpty >> not) identifier ->
-                identifier
-                |> Seq.last
+                (identifier
+                |> Seq.tryLast).Value
                 |> ExpressionUtilities.identAsCompiledOpName
                 |> hash
             | _ -> 0
@@ -494,7 +494,7 @@ module HintParser =
         let private pescapechar: Parser<char, unit> =
             skipChar '\\'
             >>. pischar ['"';'\\';'\'';'n';'t';'b';'r';'a';'f';'v']
-            |>> fun x -> Map.find x escapeMap
+            |>> fun x -> (Map.tryFind x escapeMap).Value
 
         let private pnonescapechars: Parser<char, unit> =
             skipChar '\\'
@@ -1065,24 +1065,24 @@ module HintParser =
 
     let pexpressionbasedhint =
         parse {
-            let! m = Expressions.pexpression
+            let! expression = Expressions.pexpression
 
             do! phintcenter
 
-            let! s = psuggestion
+            let! suggestion = psuggestion
 
-            return { MatchedNode = HintExpr m; Suggestion = s }
+            return { MatchedNode = HintExpr expression; Suggestion = suggestion }
         }
 
     let ppatternbasedhint =
         parse {
-            let! m = Patterns.ppattern
+            let! pattern = Patterns.ppattern
 
             do! phintcenter
 
-            let! s = psuggestion
+            let! suggestion = psuggestion
 
-            return { MatchedNode = HintPat m; Suggestion = s }
+            return { MatchedNode = HintPat pattern; Suggestion = suggestion }
         }
 
     let phint: Parser<Hint, unit> =

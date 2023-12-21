@@ -5,10 +5,10 @@ module Prelude =
 
     module Async =
         let combine operation firstAsync secondAsync = async {
-            let! x = firstAsync 
-            let! y = secondAsync 
-            return operation x y }
+            let! firstOperation = firstAsync 
+            let! secondOperation = secondAsync 
+            return operation firstOperation secondOperation }
 
         let map operation xAsync = async {
-            let! x = xAsync
-            return operation x }
+            let! xAsyncArg = xAsync
+            return operation xAsyncArg }
