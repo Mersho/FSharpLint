@@ -384,7 +384,14 @@ Target.create "SelfCheck" (fun _ ->
                 "\"maxNumberOfItemsInTuple\": {\r\n        \"enabled\": true,"
             )
 
-    File.WriteAllText (fsharplintJsonDir, enableMaxNumberOfItemsInTuple)
+    let enableMaxNumberOfFunctionParameters =
+        enableMaxNumberOfItemsInTuple
+            .Replace (
+                "\"maxNumberOfFunctionParameters\": {\r\n        \"enabled\": false,",
+                "\"maxNumberOfFunctionParameters\": {\r\n        \"enabled\": true,"
+            )
+
+    File.WriteAllText (fsharplintJsonDir, enableMaxNumberOfFunctionParameters)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
