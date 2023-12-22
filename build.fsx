@@ -12,6 +12,7 @@ open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 open Fake.Api
+open Newtonsoft.Json.Linq
 
 open System
 open System.IO
@@ -189,11 +190,21 @@ Target.create "SelfCheck" (fun _ ->
 
     let fsharplintJsonDir = Path.Combine("src", "FSharpLint.Core", "fsharplint.json")
     let fsharplintJsonText = File.ReadAllText fsharplintJsonDir
-    let enableRecursiveAsyncFunction = fsharplintJsonText.Replace ("\"recursiveAsyncFunction\": { \"enabled\": false },",
-                                                    "\"recursiveAsyncFunction\": { \"enabled\": true },")
-    File.WriteAllText (fsharplintJsonDir, enableRecursiveAsyncFunction)
 
-    printfn "Re-run FsharpLint and activate all rules."
+    let recommendedRules =
+        [ 
+            "recursiveAsyncFunction"
+        ]
+
+    let jsonObj = JObject.Parse fsharplintJsonText
+    for key in recommendedRules do
+        let token = jsonObj.SelectToken key
+        if not (isNull token) then
+            token.SelectToken("enabled").Replace(JValue true) |> ignore<unit>
+
+    File.WriteAllText (fsharplintJsonDir, jsonObj.ToString())
+
+    printfn "Now re-running self-check with more rules enabled..."
     runLinter ()
 )
 
