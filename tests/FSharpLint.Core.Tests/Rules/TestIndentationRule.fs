@@ -31,8 +31,19 @@ type TestIndentationRuleBase (rule:Rule) =
         let lines = input.Split "\n"
 
         let syntaxArray = AbstractSyntaxArray.astToArray parseResults.ParseTree
-        let (_, context) = runAstNodeRules Array.empty globalConfig None fileName input lines syntaxArray
+        let (_, context) = runAstNodeRules { Rules = Array.empty
+                                             GlobalConfig = globalConfig
+                                             TypeCheckResults = None
+                                             FilePath = fileName
+                                             FileContent = input
+                                             Lines = lines
+                                             SyntaxArray = syntaxArray }
         let lineRules = { LineRules.IndentationRule = Some rule; NoTabCharactersRule = None; GenericLineRules = [||] }
 
-        runLineRules lineRules globalConfig fileName input lines context
+        runLineRules { LineRules = lineRules
+                       GlobalConfig = globalConfig
+                       FilePath = fileName
+                       FileContent = input
+                       Lines = lines
+                       Context = context }
         |> Array.iter this.PostSuggestion
