@@ -339,8 +339,15 @@ Target.create "SelfCheck" (fun _ ->
                 "\"noPartialFunctions\": {\r\n        \"enabled\": false,",
                 "\"noPartialFunctions\": {\r\n        \"enabled\": true,"
             )
+    
+    let enableMaxNumberOfItemsInTuple =
+        enableNoPartialFunctions
+            .Replace (
+                "\"maxNumberOfItemsInTuple\": {\r\n        \"enabled\": false,",
+                "\"maxNumberOfItemsInTuple\": {\r\n        \"enabled\": true,"
+            )
 
-    File.WriteAllText (fsharplintJsonDir, enableNoPartialFunctions)
+    File.WriteAllText (fsharplintJsonDir, enableMaxNumberOfItemsInTuple)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
