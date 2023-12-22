@@ -12,6 +12,7 @@ open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 open Fake.Api
+open Newtonsoft.Json.Linq
 
 open System
 open System.IO
@@ -189,188 +190,48 @@ Target.create "SelfCheck" (fun _ ->
 
     let fsharplintJsonDir = Path.Combine("src", "FSharpLint.Core", "fsharplint.json")
     let fsharplintJsonText = File.ReadAllText fsharplintJsonDir
-    let enableRecursiveAsyncFunction = fsharplintJsonText.Replace ("\"recursiveAsyncFunction\": { \"enabled\": false },",
-                                                    "\"recursiveAsyncFunction\": { \"enabled\": true },")
-    let enableNestedStatements =
-        enableRecursiveAsyncFunction
-            .Replace (
-                "\"nestedStatements\": {\r\n        \"enabled\": false,",
-                "\"nestedStatements\": {\r\n        \"enabled\": true,"
-            )
-    (* This rule is too complex and we can enable it later
-    let enableCyclomaticComplexity =
-        enableNestedStatements
-            .Replace (
-                "\"cyclomaticComplexity\": {\r\n        \"enabled\": false,",
-                "\"cyclomaticComplexity\": {\r\n        \"enabled\": true,"
-            )
-    *)
 
-    (* This rule must be improved and we can enable it later
-    let enableAvoidSinglePipeOperator =
-        enableNestedStatements
-            .Replace (
-                "\"avoidSinglePipeOperator\": { \"enabled\": false },",
-                "\"avoidSinglePipeOperator\": { \"enabled\": true },")
-    *)
+    let recommendedRules =
+        [ 
+            "recursiveAsyncFunction"
+            "nestedStatements"
+            "maxLinesInLambdaFunction"
+            "maxLinesInMatchLambdaFunction"
+            "maxLinesInValue"
+            "maxLinesInFunction"
+            "maxLinesInMember"
+            "maxLinesInConstructor"
+            "maxLinesInProperty"
+            "maxLinesInModule"
+            "maxLinesInRecord"
+            "maxLinesInEnum"
+            "maxLinesInUnion"
+            "maxLinesInClass"
+            "favourTypedIgnore"
+            "favourStaticEmptyFields"
+            "favourConsistentThis"
+            "avoidTooShortNames"
+            "asyncExceptionWithoutReturn"
+            "noPartialFunctions"
+            "maxNumberOfItemsInTuple"
+            "maxNumberOfFunctionParameters"
+            "maxNumberOfMembers"
+            "maxNumberOfBooleanOperatorsInCondition"
+            (*
+            "avoidSinglePipeOperator" rule must be improved and we can enable it later
+            "cyclomaticComplexity" rule is too complex and we can enable it later
+            *)
+        ]
 
-    let enableMaxLinesInLambdaFunction =
-        enableNestedStatements
-            .Replace (
-                "\"maxLinesInLambdaFunction\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInLambdaFunction\": {\r\n        \"enabled\": true,"
-            )
+    let jsonObj = JObject.Parse fsharplintJsonText
+    for key in recommendedRules do
+        let token = jsonObj.SelectToken key
+        if isNull token then
+            token.SelectToken("enabled").Replace(JValue true) |> ignore<unit>
 
-    let enableMaxLinesInMatchLambdaFunction =
-        enableMaxLinesInLambdaFunction
-            .Replace (
-                "\"maxLinesInMatchLambdaFunction\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInMatchLambdaFunction\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enableMaxLinesInValue =
-        enableMaxLinesInMatchLambdaFunction
-            .Replace (
-                "\"maxLinesInValue\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInValue\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enablemaxLinesInFunction =
-        enableMaxLinesInValue
-            .Replace (
-                "\"maxLinesInFunction\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInFunction\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enablemaxLinesInMember =
-        enablemaxLinesInFunction
-            .Replace (
-                "\"maxLinesInMember\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInMember\": {\r\n        \"enabled\": true,"
-            )
+    File.WriteAllText (fsharplintJsonDir, jsonObj.ToString())
 
-    let enablemaxLinesInConstructor =
-        enablemaxLinesInMember
-            .Replace (
-                "\"maxLinesInConstructor\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInConstructor\": {\r\n        \"enabled\": true,"
-            )
-
-    let enablemaxLinesInProperty =
-        enablemaxLinesInConstructor
-            .Replace (
-                "\"maxLinesInProperty\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInProperty\": {\r\n        \"enabled\": true,"
-            )
-
-    let enablemaxLinesInModule =
-        enablemaxLinesInProperty
-            .Replace (
-                "\"maxLinesInModule\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInModule\": {\r\n        \"enabled\": true,"
-            )
-
-    let enablemaxLinesInRecord =
-        enablemaxLinesInModule
-            .Replace (
-                "\"maxLinesInRecord\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInRecord\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enableMaxLinesInEnum =
-        enablemaxLinesInRecord
-            .Replace (
-                "\"maxLinesInEnum\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInEnum\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enableMaxLinesInUnion =
-        enableMaxLinesInEnum
-            .Replace (
-                "\"maxLinesInUnion\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInUnion\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enableMaxLinesInClass =
-        enableMaxLinesInUnion
-            .Replace (
-                "\"maxLinesInClass\": {\r\n        \"enabled\": false,",
-                "\"maxLinesInClass\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enableFavourTypedIgnore = 
-        enableMaxLinesInClass
-            .Replace (
-                "\"favourTypedIgnore\": { \"enabled\": false },",
-                "\"favourTypedIgnore\": { \"enabled\": true },"
-            )
-
-    let enableFavourStaticEmptyFields = 
-        enableFavourTypedIgnore
-            .Replace (
-                "\"favourStaticEmptyFields\": { \"enabled\": false },",
-                "\"favourStaticEmptyFields\": { \"enabled\": true },"
-            )
-
-    let enableFavourConsistentThis =
-        enableFavourStaticEmptyFields
-            .Replace (
-                "\"favourConsistentThis\": {\r\n        \"enabled\": false,",
-                "\"favourConsistentThis\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enableAvoidTooShortNames = 
-        enableFavourConsistentThis
-            .Replace (
-                "\"avoidTooShortNames\": { \"enabled\": false },",
-                "\"avoidTooShortNames\": { \"enabled\": true },"
-            )
-
-    let enableAsyncExceptionWithoutReturn = 
-        enableAvoidTooShortNames
-            .Replace (
-                "\"asyncExceptionWithoutReturn\": { \"enabled\": false },",
-                "\"asyncExceptionWithoutReturn\": { \"enabled\": true },"
-            )
-
-    let enableNoPartialFunctions =
-        enableAsyncExceptionWithoutReturn
-            .Replace (
-                "\"noPartialFunctions\": {\r\n        \"enabled\": false,",
-                "\"noPartialFunctions\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enableMaxNumberOfItemsInTuple =
-        enableNoPartialFunctions
-            .Replace (
-                "\"maxNumberOfItemsInTuple\": {\r\n        \"enabled\": false,",
-                "\"maxNumberOfItemsInTuple\": {\r\n        \"enabled\": true,"
-            )
-
-    let enableMaxNumberOfFunctionParameters =
-        enableMaxNumberOfItemsInTuple
-            .Replace (
-                "\"maxNumberOfFunctionParameters\": {\r\n        \"enabled\": false,",
-                "\"maxNumberOfFunctionParameters\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enableMaxNumberOfMembers =
-        enableMaxNumberOfFunctionParameters
-            .Replace (
-                "\"maxNumberOfMembers\": {\r\n        \"enabled\": false,",
-                "\"maxNumberOfMembers\": {\r\n        \"enabled\": true,"
-            )
-    
-    let enableMaxNumberOfBooleanOperatorsInCondition =
-        enableMaxNumberOfMembers
-            .Replace (
-                "\"maxNumberOfBooleanOperatorsInCondition\": {\r\n        \"enabled\": false,",
-                "\"maxNumberOfBooleanOperatorsInCondition\": {\r\n        \"enabled\": true,"
-            )
-
-    File.WriteAllText (fsharplintJsonDir, enableMaxNumberOfBooleanOperatorsInCondition)
-
-    printfn "Re-run FsharpLint and activate all rules."
+    printfn "Now re-running self-check with more rules enabled..."
     runLinter ()
 )
 
