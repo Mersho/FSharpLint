@@ -397,8 +397,15 @@ Target.create "SelfCheck" (fun _ ->
                 "\"maxNumberOfMembers\": {\r\n        \"enabled\": false,",
                 "\"maxNumberOfMembers\": {\r\n        \"enabled\": true,"
             )
+    
+    let enableMaxNumberOfBooleanOperatorsInCondition =
+        enableMaxNumberOfMembers
+            .Replace (
+                "\"maxNumberOfBooleanOperatorsInCondition\": {\r\n        \"enabled\": false,",
+                "\"maxNumberOfBooleanOperatorsInCondition\": {\r\n        \"enabled\": true,"
+            )
 
-    File.WriteAllText (fsharplintJsonDir, enableMaxNumberOfMembers)
+    File.WriteAllText (fsharplintJsonDir, enableMaxNumberOfBooleanOperatorsInCondition)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
