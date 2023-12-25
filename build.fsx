@@ -219,6 +219,7 @@ Target.create "SelfCheck" (fun _ ->
             "noPartialFunctions"
             "maxNumberOfItemsInTuple"
             "maxNumberOfFunctionParameters"
+            "maxNumberOfMembers"
         ]
 
     let jsonObj = JObject.Parse fsharplintJsonText
