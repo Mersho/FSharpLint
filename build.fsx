@@ -390,8 +390,15 @@ Target.create "SelfCheck" (fun _ ->
                 "\"maxNumberOfFunctionParameters\": {\r\n        \"enabled\": false,",
                 "\"maxNumberOfFunctionParameters\": {\r\n        \"enabled\": true,"
             )
+    
+    let enableMaxNumberOfMembers =
+        enableMaxNumberOfFunctionParameters
+            .Replace (
+                "\"maxNumberOfMembers\": {\r\n        \"enabled\": false,",
+                "\"maxNumberOfMembers\": {\r\n        \"enabled\": true,"
+            )
 
-    File.WriteAllText (fsharplintJsonDir, enableMaxNumberOfFunctionParameters)
+    File.WriteAllText (fsharplintJsonDir, enableMaxNumberOfMembers)
 
     printfn "Re-run FsharpLint and activate all rules."
     runLinter ()
