@@ -62,3 +62,32 @@ module Program
         let result = this.ApplyQuickFix source
 
         Assert.AreEqual(expected, result)
+
+    [<Test>]
+    member this.LetWildcardMultilaneStatementOfUnitSuggestedFix() =
+        let source = """
+module Program
+
+let (_) =
+  let x = 4 + 4
+  ()"""
+        let expected = """
+module Program
+
+let x = 4 + 4 |> ignore"""
+        this.Parse source
+
+        Assert.IsTrue(this.ErrorExistsAt(4, 4))
+        
+        let result = this.ApplyQuickFix source
+
+        Assert.AreEqual(expected, result)
+
+//    [<Test>]
+//    member this.LetWildCardInParanUnitValue() =
+//        this.Parse """
+//module Program
+
+//let ((((_)))) = List.iter (fun x -> ()) []"""
+
+//        Assert.IsTrue(this.ErrorExistsAt(4, 4))
