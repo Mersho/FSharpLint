@@ -54,7 +54,7 @@ let _ = ()"""
         let expected = """
 module Program
 
-() |> ignore"""
+(()) |> ignore"""
         this.Parse source
 
         Assert.IsTrue(this.ErrorExistsAt(4, 4))
