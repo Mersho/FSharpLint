@@ -74,7 +74,8 @@ let (_) =
         let expected = """
 module Program
 
-let x = 4 + 4 |> ignore"""
+(let x = 4 + 4
+  ()) |> ignore"""
         this.Parse source
 
         Assert.IsTrue(this.ErrorExistsAt(4, 4))
@@ -83,11 +84,22 @@ let x = 4 + 4 |> ignore"""
 
         Assert.AreEqual(expected, result)
 
-//    [<Test>]
-//    member this.LetWildCardInParanUnitValue() =
-//        this.Parse """
-//module Program
+    [<Test>]
+    member this.LetWildCardInParanUnitValueSuggestedFix() =
+        let source = """
+module Program
 
-//let ((((_)))) = List.iter (fun x -> ()) []"""
+let ((((_)))) = List.iter (fun x -> ()) []"""
 
-//        Assert.IsTrue(this.ErrorExistsAt(4, 4))
+        let expected = """
+module Program
+
+(List.iter (fun x -> ()) []) |> ignore"""
+
+        this.Parse source
+
+        Assert.IsTrue(this.ErrorExistsAt(4, 4))
+
+        let result = this.ApplyQuickFix source
+
+        Assert.AreEqual(expected, result)
