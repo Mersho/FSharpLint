@@ -19,7 +19,9 @@ let runner (args: AstNodeRuleParams) =
 
             let varNameUsages =
                 symbolUses
-                |> Seq.filter (fun usage -> usage.Symbol.DisplayName = varName)
+                |> Seq.filter (fun usage ->
+                    usage.Symbol.DisplayName = varName
+                    && usage.Symbol.DeclarationLocation.Value = varRange)
 
             if (varNameUsages |> Seq.length) <= 1 then
                 { Range = varRange
