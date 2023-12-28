@@ -32,3 +32,11 @@ let barFunc () =
     ()"""
 
         Assert.IsTrue this.ErrorsExist
+
+    [<Test>]
+    member this.UnneededMutableKeywordShouldProduceError_2() =
+        this.Parse """
+let mutable foo = 1
+printfn "%i" foo"""
+
+        Assert.IsTrue this.ErrorsExist
