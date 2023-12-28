@@ -22,3 +22,13 @@ foo <- foo + 1"""
 let mutable foo = 1"""
 
         Assert.IsTrue this.ErrorsExist
+
+    [<Test>]
+    member this.UnneededMutableKeywordShouldProduceError_1() =
+        this.Parse """
+let mutable foo = 1
+let barFunc () =
+    let foo = 2
+    ()"""
+
+        Assert.IsTrue this.ErrorsExist
