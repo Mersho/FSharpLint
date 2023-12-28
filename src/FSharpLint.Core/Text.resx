@@ -357,4 +357,7 @@
   <data name="RulesSuggestUseAutoProperty" xml:space="preserve">
     <value>Consider using auto-properties via the 'val' keyword.</value>
   </data>
+  <data name="RulesUnneededMutableKeyword" xml:space="preserve">
+    <value>The "mutable" keyword can simply be removed because the variable '{0}' is defined as mutable, but no new value has been assigned to it.</value>
+  </data>
 </root>
