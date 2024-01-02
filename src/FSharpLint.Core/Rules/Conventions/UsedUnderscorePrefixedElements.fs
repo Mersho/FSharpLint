@@ -19,8 +19,12 @@ let runner (args: AstNodeRuleParams) =
             |> Seq.choose (fun usage ->
                 match usage.Symbol with
                 | :? FSharp.Compiler.Symbols.FSharpMemberOrFunctionOrValue as symbol -> 
-                    if not usage.IsFromDefinition && symbol.FullName.StartsWith "_" 
-                            && symbol.FullName <> "_" && not symbol.IsCompilerGenerated then
+                    let conditions =
+                        not usage.IsFromDefinition
+                        && symbol.FullName.StartsWith "_"
+                        && symbol.FullName <> "_"
+                        && not symbol.IsCompilerGenerated
+                    if conditions then
                         Some {
                             Range = usage.Range
                             Message = String.Format(Resources.GetString ("RulesUsedUnderscorePrefixedElements"))
