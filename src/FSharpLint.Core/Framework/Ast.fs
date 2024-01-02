@@ -236,8 +236,6 @@ module Ast =
         | SynPat.LongIdent(_, _, _, constructorArguments, _, _) ->
             add <| ConstructorArguments constructorArguments
 
-    // FIXME: This rule has to be fixed to not count the comments
-    // fsharplint:disable-next-line MaxLinesInFunction
     let inline private expressionChildren node add =
         let addMany exprs =
             for expr in exprs do
