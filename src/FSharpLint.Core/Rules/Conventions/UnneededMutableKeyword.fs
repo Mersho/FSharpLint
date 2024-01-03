@@ -8,22 +8,26 @@ open FSharpLint.Framework
 open FSharpLint.Framework.Suggestion
 
 let runner (args: AstNodeRuleParams) =
-    match args.AstNode, args.CheckInfo with
-    | AstNode.ModuleDeclaration (SynModuleDecl.Let (_, bindings, _)), Some checkInfo ->
+    match args.AstNode with
+    | AstNode.ModuleDeclaration(SynModuleDecl.Let(_, bindings, _)) ->
         match bindings with
         | SynBinding (_, _, _, isMutable, _, _, _, SynPat.Named (_, ident, _, _, varRange), _, _, _, _) :: _ when
             isMutable
             ->
-            let symbolUses = checkInfo.GetAllUsesOfAllSymbolsInFile()
             let varName = ident.idText
 
-            let varNameUsages =
-                symbolUses
-                |> Seq.filter (fun usage ->
-                    usage.Symbol.DisplayName = varName
-                    && usage.Symbol.DeclarationLocation.Value = varRange)
+            let findAllAssignments =
+                args.SyntaxArray
+                |> Array.filter (fun node ->
+                    match node.Actual with
+                    | AstNode.ModuleDeclaration(SynModuleDecl.DoExpr(_,
+                                                                     SynExpr.LongIdentSet(LongIdentWithDots([ id ], _),
+                                                                                          _,
+                                                                                          _),
+                                                                     _)) -> id.idText = varName
+                    | _ -> false)
 
-            if (varNameUsages |> Seq.length) <= 1 then
+            if findAllAssignments.Length < 1 then
                 { Range = varRange
                   Message = String.Format(Resources.GetString "RulesUnneededMutableKeyword", varName)
                   SuggestedFix = None
