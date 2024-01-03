@@ -21,14 +21,13 @@ let runner (args: AstNodeRuleParams) =
                     | _ -> false
                 | _ -> false)
 
-        if wrongMatchExpressions.Length > 0 then
-            { Range = wrongMatchExpressions.Head.Range
+        wrongMatchExpressions
+        |> List.map (fun expr ->
+            { Range = expr.Range
               Message = Resources.GetString "RulesFavourAsKeyword"
               SuggestedFix = None
-              TypeChecks = list.Empty }
-            |> Array.singleton
-        else
-            Array.empty
+              TypeChecks = list.Empty })
+        |> List.toArray
 
     | _ -> Array.empty
 
