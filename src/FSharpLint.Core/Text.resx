@@ -357,4 +357,7 @@
   <data name="RulesSuggestUseAutoProperty" xml:space="preserve">
     <value>Consider using auto-properties via the 'val' keyword.</value>
   </data>
+  <data name="RulesFavourAsKeyword" xml:space="preserve">
+    <value>Consider pattern matching the string insted of checking in when expression.</value>
+  </data>
 </root>
