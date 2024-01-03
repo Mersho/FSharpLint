@@ -42,6 +42,7 @@
     "usedUnderscorePrefixedElements": { "enabled": true },
     "failwithWithSingleArgument": { "enabled": true },
     "raiseWithSingleArgument": { "enabled": true },
+    "unneededMutableKeyword": { "enabled": true },
     "nullArgWithSingleArgument": { "enabled": true },
     "invalidOpWithSingleArgument": { "enabled": true },
     "invalidArgWithTwoArguments": { "enabled": true },
