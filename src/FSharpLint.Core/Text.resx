@@ -358,6 +358,6 @@
     <value>Consider using auto-properties via the 'val' keyword.</value>
   </data>
   <data name="RulesFavourAsKeyword" xml:space="preserve">
-    <value>Consider pattern matching the string insted of checking in when expression.</value>
+    <value>Consider pattern matching your expression insted of checking in `when` condition.</value>
   </data>
 </root>

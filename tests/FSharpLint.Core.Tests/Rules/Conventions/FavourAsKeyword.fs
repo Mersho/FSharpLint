@@ -27,3 +27,13 @@ match foo with
 | _ -> printfn "bar is not baz" """
 
         Assert.IsTrue this.ErrorsExist
+
+    [<Test>]
+    member this.FavourAsKeywordShouldProduceError_2() =
+        this.Parse """
+let foo = 12
+match foo with
+| bar when bar = 12 -> printfn "bar is 12"
+| _ -> printfn "bar is not baz" """
+
+        Assert.IsTrue this.ErrorsExist
