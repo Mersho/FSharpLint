@@ -49,3 +49,23 @@ match foo with
 
         Assert.IsTrue(this.ErrorExistsAt(4, 2))
         Assert.IsTrue(this.ErrorExistsAt(5, 2))
+
+    [<Test>]
+    member this.FavourAsKeywordShouldProduceErrorSuggestedFix() =
+        let source = """
+let foo = "baz"
+match foo with
+| bar when bar = "baz" -> printfn "bar is baz"
+| _ -> printfn "bar is not baz" """
+        let expected = """
+let foo = "baz"
+match foo with
+| "baz" as bar -> printfn "bar is baz"
+| _ -> printfn "bar is not baz" """
+        this.Parse source
+
+        Assert.IsTrue this.ErrorsExist
+
+        let result = this.ApplyQuickFix source
+
+        Assert.AreEqual(expected, result)
