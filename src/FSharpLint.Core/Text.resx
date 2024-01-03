@@ -360,6 +360,6 @@
   <data name="RulesUnneededRecKeyword" xml:space="preserve">
     <value>The '{0}' function has a "rec" keyword, but it is not really recursive, consider removing it.</value>
   <data name="RulesFavourAsKeyword" xml:space="preserve">
-    <value>Consider pattern matching the string insted of checking in when expression.</value>
+    <value>Consider pattern matching your expression insted of checking in `when` condition.</value>
   </data>
 </root>
