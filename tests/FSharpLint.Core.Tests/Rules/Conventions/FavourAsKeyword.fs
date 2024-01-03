@@ -37,3 +37,15 @@ match foo with
 | _ -> printfn "bar is not baz" """
 
         Assert.IsTrue this.ErrorsExist
+
+    [<Test>]
+    member this.FavourAsKeywordShouldProduceError_3() =
+        this.Parse """
+let foo = "baz"
+match foo with
+| bar when bar = "baz" -> printfn "bar is baz"
+| buzz when buzz = "buzz" -> printfn "bar is buzz"
+| _ -> printfn "bar is not baz" """
+
+        Assert.IsTrue(this.ErrorExistsAt(4, 2))
+        Assert.IsTrue(this.ErrorExistsAt(5, 2))
