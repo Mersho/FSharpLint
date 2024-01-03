@@ -4,7 +4,7 @@ open NUnit.Framework
 open FSharpLint.Rules
 open FSharpLint.Rules.Helper.SourceLength
 
-let generateNewLines numNewLines = Array.create numNewLines "\n" |> String.concat ""
+let generateNewLines numNewLines = Array.create numNewLines "\n" |> String.concat "printf \"\""
 
 let FunctionLength = 70
 [<TestFixture>]
