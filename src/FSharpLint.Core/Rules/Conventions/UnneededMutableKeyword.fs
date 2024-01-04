@@ -9,7 +9,7 @@ open FSharpLint.Framework.Suggestion
 
 let runner (args: AstNodeRuleParams) =
     match args.AstNode with
-    | AstNode.ModuleDeclaration(SynModuleDecl.Let(_, bindings, _)) ->
+    | AstNode.ModuleDeclaration(SynModuleDecl.Let(_, bindings, letRange)) ->
         match bindings with
         | SynBinding (_, _, _, isMutable, _, _, _, SynPat.Named (_, ident, _, _, varRange), _, _, _, _) :: _ when
             isMutable
@@ -21,10 +21,9 @@ let runner (args: AstNodeRuleParams) =
                 |> Array.filter (fun node ->
                     match node.Actual with
                     | AstNode.ModuleDeclaration(SynModuleDecl.DoExpr(_,
-                                                                     SynExpr.LongIdentSet(LongIdentWithDots([ id ], _),
-                                                                                          _,
-                                                                                          _),
-                                                                     _)) -> id.idText = varName
+                                                                     SynExpr.LongIdentSet(longIdentWithDots, _, _),
+                                                                     _)) ->
+                        ExpressionUtilities.longIdentWithDotsToString longIdentWithDots = varName
                     | _ -> false)
 
             if findAllAssignments.Length < 1 then

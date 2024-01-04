@@ -40,3 +40,18 @@ let mutable foo = 1
 printfn "%i" foo"""
 
         Assert.IsTrue this.ErrorsExist
+
+    [<Test>]
+    member this.UnneededMutableKeywordShouldProduceErrorSuggestedFix() =
+        let source = """
+let mutable foo = 1"""
+        let expected = """
+let foo = 1"""
+
+        this.Parse source
+
+        Assert.IsTrue this.ErrorsExist
+
+        let result = this.ApplyQuickFix source
+
+        Assert.AreEqual(expected, result)
