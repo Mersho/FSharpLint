@@ -11,7 +11,7 @@ let runner (args: AstNodeRuleParams) =
     match args.AstNode with
     | AstNode.ModuleDeclaration(SynModuleDecl.Let(_, bindings, letRange)) ->
         match bindings with
-        | SynBinding (_, _, _, isMutable, _, _, _, SynPat.Named (_, ident, _, _, varRange), _, _, _, _) :: _ when
+        | SynBinding (_, _, _, isMutable, _, _, _, SynPat.Named (_, ident, _, _, _), _, _, _, _) :: _ when
             isMutable
             ->
             let varName = ident.idText
@@ -27,9 +27,17 @@ let runner (args: AstNodeRuleParams) =
                     | _ -> false)
 
             if findAllAssignments.Length < 1 then
-                { Range = varRange
+                let suggestedFix =
+                    lazy
+                        (ExpressionUtilities.tryFindTextOfRange letRange args.FileContent
+                         |> Option.map (fun fromText ->
+                             { FromText = fromText
+                               FromRange = letRange
+                               ToText = fromText.Replace(" mutable", "") }))
+
+                { Range = letRange
                   Message = String.Format(Resources.GetString "RulesUnneededMutableKeyword", varName)
-                  SuggestedFix = None
+                  SuggestedFix = Some(suggestedFix)
                   TypeChecks = list.Empty }
                 |> Array.singleton
             else
