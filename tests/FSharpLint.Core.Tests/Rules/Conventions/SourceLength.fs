@@ -5,6 +5,9 @@ open FSharpLint.Rules
 open FSharpLint.Rules.Helper.SourceLength
 
 let generateNewLines numNewLines = Array.create numNewLines "\n" |> String.concat "printf \"\""
+let generateAbstractMembers numMembers numIndets = 
+    Array.init numMembers (fun index -> sprintf "abstract member Foo%d : unit -> unit\n" index)
+    |> String.concat (String.replicate numIndets " ")
 
 let FunctionLength = 70
 [<TestFixture>]
@@ -230,6 +233,7 @@ type TestMaxLinesInClass() =
         this.Parse(sprintf """
 module Program
   type MyClass2() as this =
+    do
     %s
     member this.PrintMessage() = ()""" (generateNewLines ClassLength))
         Assert.IsTrue(this.ErrorExistsAt(3, 7))
