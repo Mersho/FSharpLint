@@ -292,6 +292,7 @@
     "suggestUseAutoProperty": { "enabled": false },
     "avoidTooShortNames": { "enabled": false },
     "asyncExceptionWithoutReturn": { "enabled": false },
+    "favourAsKeyword": { "enabled": true },
     "indentation": {
         "enabled": false
     },
