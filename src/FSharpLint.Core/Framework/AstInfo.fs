@@ -14,7 +14,7 @@ module AstInfo =
         | Other
 
     let identifierTypeFromValData = function
-        | SynValData.SynValData(memberFlags, valInfo, _) -> 
+        | SynValData.SynValData(memberFlags, valInfo, _, _) -> 
             match memberFlags with
             | Some(memberFlags) -> 
                 match memberFlags.MemberKind with

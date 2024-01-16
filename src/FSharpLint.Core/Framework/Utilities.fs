@@ -49,7 +49,8 @@ module ExpressionUtilities =
     /// Converts an operator name e.g. op_Add to the operator symbol e.g. +
     let identAsDecompiledOpName (ident:Ident) =
         if ident.idText.StartsWith("op_") then
-            PrettyNaming.DecompileOpName ident.idText
+            //PrettyNaming.DecompileOpName ident.idText
+            failwith "No DecompileOpName in PrettyNaming module"
         else ident.idText
 
     let identAsCompiledOpName (identName: string) = 

@@ -140,8 +140,8 @@ module Lint =
                       CheckInfo = typeCheckResults
                       GlobalConfig = globalConfig }
                 // Build state for rules with context.
-                indentationRuleState <- Indentation.ContextBuilder.builder indentationRuleState astNode.Actual
-                noTabCharactersRuleState <- NoTabCharacters.ContextBuilder.builder noTabCharactersRuleState astNode.Actual
+                //indentationRuleState <- Indentation.ContextBuilder.builder indentationRuleState astNode.Actual
+                //noTabCharactersRuleState <- NoTabCharacters.ContextBuilder.builder noTabCharactersRuleState astNode.Actual
 
                 rules
                 |> Array.collect (fun rule -> runAstNodeRule rule astNodeParams))

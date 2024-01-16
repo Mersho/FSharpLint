@@ -7,9 +7,6 @@ type System.String with
     member path.ToPlatformIndependentPath() =
         path.Replace('\\', System.IO.Path.DirectorySeparatorChar)
 
-let configWithHints hints =
-     { Configuration.Zero with Hints = hints }
-
 
 [<TestFixture>]
 type TestConfiguration() =

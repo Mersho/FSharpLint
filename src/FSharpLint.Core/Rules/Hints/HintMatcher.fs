@@ -16,11 +16,9 @@ open FSharpLint.Framework.Rules
 type Config =
     { HintTrie:MergeSyntaxTrees.Edges }
 
-let rec private extractSimplePatterns = function
-    | SynSimplePats.SimplePats(simplePatterns, _) ->
+let private extractSimplePatterns = function
+    | SynSimplePats.SimplePats(simplePatterns, _, _) ->
         simplePatterns
-    | SynSimplePats.Typed(simplePatterns, _, _) ->
-        extractSimplePatterns simplePatterns
 
 let rec private extractIdent = function
     | SynSimplePat.Id(ident, _, isCompilerGenerated, _, _, _) -> (ident, isCompilerGenerated)
@@ -443,7 +441,7 @@ module private MatchPattern =
 
     and private matchTuple (pattern, hint) =
         match (pattern, hint) with
-        | SynPat.Tuple(_, patterns, _), Pattern.Tuple(hintExpressions) ->
+        | SynPat.Tuple(_, patterns, _, _), Pattern.Tuple(hintExpressions) ->
             doPatternsMatch patterns hintExpressions
         | _ -> false
 
@@ -453,7 +451,7 @@ module private MatchPattern =
                             SynLongIdent([ident], _, _),
                             _,
                             _,
-                            SynArgPats.Pats([SynPat.Tuple(_, [leftPattern;rightPattern], _)]),
+                            SynArgPats.Pats([SynPat.Tuple(_, [leftPattern;rightPattern], _, _)]),
                             _,
                             _), Pattern.Cons(left, right)
                 when ident.idText = "op_ColonColon" ->
