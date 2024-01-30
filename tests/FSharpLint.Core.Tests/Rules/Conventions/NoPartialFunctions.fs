@@ -215,3 +215,17 @@ module Program =
         Assert.IsTrue this.ErrorsExist
         this.AssertErrorWithMessageExists("Consider using pattern matching instead of partial function/method 'Foo.Bar.Baz'.")
 *)
+
+    [<Test>]
+    member this.``No error on typedefof``() =
+        this.Parse """
+module Foo
+
+let innerType = (typedefof<Nullable<_>>).MakeGenericType([||])
+
+type RuleConfig<'Config> = {
+    Config:'Config option
+}
+"""
+
+        this.AssertNoWarnings()
