@@ -42,9 +42,9 @@ let DoNothing = ignore
 // Build variables
 // --------------------------------------------------------------------------------------
 
-let buildDir  = "./build/"
-let nugetDir  = "./out/"
 let rootDir = (__SOURCE_DIRECTORY__ |> DirectoryInfo).Parent
+let buildDir  = Path.Combine(rootDir.FullName, "build")
+let nugetDir  = Path.Combine(rootDir.FullName, "out")
 
 System.Environment.CurrentDirectory <- rootDir.FullName
 let changelogFilename = "CHANGELOG.md"

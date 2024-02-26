@@ -10,6 +10,9 @@ open Fake.DotNet
 
 open Common
 
+let execContext = Fake.Core.Context.FakeExecutionContext.Create false "build.fsx" []
+Fake.Core.Context.setExecutionContext (Fake.Core.Context.RuntimeContext.Fake execContext)
+
 let push key =
     Paket.push (fun p -> { p with WorkingDir = nugetDir; ApiKey = key; ToolType = ToolType.CreateLocalTool() })
 
